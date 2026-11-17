@@ -8,7 +8,6 @@ const crypto = require("crypto");
 const { WebSocketServer } = require("ws");
 
 const PORT = Number(process.env.PORT) || 1828;
-const INDEX = path.join(__dirname, "public", "index.html");
 const DATA_FILE = path.join(__dirname, "games.json");
 const GAME_TTL_MS = 14 * 24 * 60 * 60 * 1000; // forget games idle for 14 days
 
@@ -53,84 +52,27 @@ function newCode() {
   return code;
 }
 
-// ---------- checking what clients send ----------
-const TYPES = ["pawn", "rook", "knight", "bishop", "queen", "king"];
-const PIECE_RE = /^[wb]_(king|queen|rook2?|bishop2?|knight2?|paw[1-8])$/;
+// ---------- checking what clients send (same rules file the page uses) ----------
+const Game = require("./public/shared.js");
 const ID_RE = /^[a-z0-9]{8,40}$/;
 const CODE_RE = /^[a-z0-9]{6,16}$/;
-
-function validState(s) {
-  const isPos = v => Array.isArray(v) && v.length === 2 && v.every(n => Number.isInteger(n) && n >= 0 && n < 8);
-  const isPiece = p => typeof p === "string" && PIECE_RE.test(p);
-  const isType = t => TYPES.includes(t);
-  try {
-    if (!s || typeof s !== "object" || !Number.isInteger(s.seq)) return false;
-    if (s.turn !== "w" && s.turn !== "b") return false;
-    if (!s.board || typeof s.board !== "object") return false;
-    const seen = new Set();
-    for (const p in s.board) {
-      if (!isPiece(p) || !isPos(s.board[p])) return false;
-      const k = s.board[p].join(",");
-      if (seen.has(k)) return false;
-      seen.add(k);
-    }
-    for (const col of ["w", "b"]) {
-      const ko = s.kingOptions && s.kingOptions[col];
-      if (!Array.isArray(ko) || !ko.every(isType) || !ko.includes("king")) return false;
-      const cap = s.captured && s.captured[col];
-      if (!Array.isArray(cap) || !cap.every(isPiece)) return false;
-    }
-    if (!s.deadRolls || typeof s.deadRolls !== "object") return false;
-    for (const p in s.deadRolls) if (!isPiece(p) || !isType(s.deadRolls[p])) return false;
-    // games saved before promotions existed
-    if (s.rollLists === undefined) s.rollLists = { w: TYPES.slice(), b: TYPES.slice() };
-    if (s.promoted === undefined) s.promoted = [];
-    if (s.pendingPromo === undefined) s.pendingPromo = null;
-    for (const col of ["w", "b"]) {
-      const rl = s.rollLists && s.rollLists[col];
-      if (!Array.isArray(rl) || rl.length > 40 || !rl.every(isType) || !TYPES.every(t => rl.includes(t))) return false;
-    }
-    if (!Array.isArray(s.promoted) || !s.promoted.every(isPiece)) return false;
-    if (s.pendingPromo !== null && (!s.pendingPromo || !isPiece(s.pendingPromo.piece))) return false;
-    if (s.locked !== null) {
-      const l = s.locked;
-      if (!l || !isPiece(l.piece) || !s.board[l.piece] || !isType(l.roll)) return false;
-      if (!Array.isArray(l.moves) || !l.moves.every(isPos)) return false;
-    }
-    if (s.lastRoll !== null && (!s.lastRoll || !isPiece(s.lastRoll.piece) || !isType(s.lastRoll.roll))) return false;
-    if (s.over !== null && (!s.over || typeof s.over.title !== "string" || typeof s.over.text !== "string")) return false;
-    if (s.note !== null && typeof s.note !== "string") return false;
-    if (!Array.isArray(s.log) || s.log.length > 50 || !s.log.every(x => typeof x === "string" && x.length < 300)) return false;
-    return true;
-  } catch (e) { return false; }
-}
-
-// A restart must be a real new game, not an arbitrary position.
-const START_BOARD = (() => {
-  const b = {};
-  const back = ["rook", "knight", "bishop", "queen", "king", "bishop2", "knight2", "rook2"];
-  back.forEach((n, c) => { b["b_" + n] = [0, c]; b["w_" + n] = [7, c]; });
-  for (let c = 0; c < 8; c++) { b["b_paw" + (c + 1)] = [1, c]; b["w_paw" + (c + 1)] = [6, c]; }
-  return b;
-})();
-function isFreshStart(s) {
-  const keys = Object.keys(s.board);
-  return keys.length === 32 &&
-    keys.every(p => START_BOARD[p] && START_BOARD[p].join() === s.board[p].join()) &&
-    s.turn === "w" && s.over === null && s.locked === null && s.pendingPromo === null &&
-    Object.keys(s.deadRolls).length === 0 && s.promoted.length === 0 &&
-    ["w", "b"].every(c => s.kingOptions[c].length === 6 && new Set(s.kingOptions[c]).size === 6 &&
-      s.rollLists[c].length === 6 && new Set(s.rollLists[c]).size === 6 && s.captured[c].length === 0);
-}
+const validState = Game.valid;
+const isFreshStart = Game.isFreshStart;
 
 // ---------- HTTP: serve the page ----------
+const STATIC = {
+  "/": ["index.html", "text/html; charset=utf-8"],
+  "/index.html": ["index.html", "text/html; charset=utf-8"],
+  "/shared.js": ["shared.js", "text/javascript; charset=utf-8"],
+  "/i18n.js": ["i18n.js", "text/javascript; charset=utf-8"],
+};
 const server = http.createServer((req, res) => {
-  const url = req.url.split("?")[0];
-  if (req.method === "GET" && (url === "/" || url === "/index.html")) {
-    fs.readFile(INDEX, (err, html) => {
-      if (err) { res.writeHead(500); return res.end("index.html missing"); }
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
-      res.end(html);
+  const file = STATIC[req.url.split("?")[0]];
+  if (req.method === "GET" && file) {
+    fs.readFile(path.join(__dirname, "public", file[0]), (err, body) => {
+      if (err) { res.writeHead(500); return res.end(file[0] + " missing"); }
+      res.writeHead(200, { "Content-Type": file[1], "Cache-Control": "no-cache" });
+      res.end(body);
     });
   } else {
     res.writeHead(404, { "Content-Type": "text/plain" });
@@ -172,7 +114,7 @@ wss.on("connection", ws => {
     if (!m || typeof m !== "object") return;
 
     if (m.type === "create") {
-      if (!ID_RE.test(m.playerId || "") || !validState(m.state)) return send(ws, { type: "error", message: "Couldn't create the game." });
+      if (!ID_RE.test(m.playerId || "") || !validState(m.state) || !isFreshStart(m.state)) return send(ws, { type: "error", message: "Couldn't create the game." });
       const code = newCode();
       games.set(code, { state: m.state, players: { w: m.playerId, b: null }, updated: Date.now() });
       scheduleSave();

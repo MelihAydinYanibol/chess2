@@ -228,7 +228,43 @@
   button.primary:hover { background: #4fd27b; }
   .who { font-size: 15px; font-weight: 600; }
   .sub { font-size: 13px; color: var(--muted); margin-top: 2px; text-transform: none; }
+  .top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .lang-btn { padding: 6px 12px; font-size: 13px; }
+  .sq.locked::after {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-linear-gradient(45deg, rgba(40,120,220,.45) 0 6px, rgba(40,120,220,.12) 6px 12px);
+    box-shadow: inset 0 0 0 3px #2878dc;
+  }
+  .lock-n { position: absolute; top: 2px; left: 4px; z-index: 4; font-size: 11px; font-weight: 700; color: #fff; text-shadow: 0 0 2px #000; }
+  .mine-mark { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; font-size: calc(var(--size) / 12); color: #ff4d4d; text-shadow: 0 0 3px #000; pointer-events: none; opacity: .9; }
+  .dot.gold { background: var(--gold); width: 36%; height: 36%; }
+  .sq.target { box-shadow: inset 0 0 0 3px rgba(242,201,76,.8); }
+  .piece.gold { color: var(--gold) !important; }
+  .piece.frozen { filter: drop-shadow(0 0 3px #7fc4ff); }
+  .stats { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; align-items: center; }
+  .stats .muted { color: var(--muted); font-size: 12px; }
+  .hand { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .card-item { background: var(--panel-2); border-radius: 8px; padding: 9px 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .card-item .body { flex: 1; min-width: 0; }
+  .card-item .name { font-weight: 700; font-size: 14px; }
+  .card-item .desc { font-size: 12px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+  .card-item button { padding: 6px 10px; font-size: 12px; flex-shrink: 0; }
+  .card-item.active { outline: 2px solid var(--gold); }
+  .k-barricade .name { color: #6fb2ff; }
+  .k-abra .name { color: #c58bff; }
+  .k-mine .name { color: #ff7a6b; }
+  .k-reborn .name { color: #6ee59a; }
+  .k-nomad .name { color: var(--gold); }
+  .shop-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; }
+  .shop-row button { padding: 5px 10px; font-size: 12px; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .effects { font-size: 13px; color: var(--text); display: flex; flex-direction: column; gap: 4px; }
+  .discard-list { display: flex; flex-direction: column; gap: 6px; text-align: left; max-height: 60vh; overflow-y: auto; }
+  .overlay .box.wide { max-width: 380px; }
+  details.shop summary { cursor: pointer; font-weight: 600; font-size: 13px; margin-top: 12px; }
 </style>
+<script src="i18n.js"></script>
+<script src="shared.js"></script>
 </head>
 <body>
 <div class="app">
@@ -246,59 +282,62 @@
     </div>
 
     <div class="card">
-      <div class="label">Roll</div>
+      <div class="label" data-t="roll"></div>
       <div class="roll" id="roll">—</div>
       <div class="sub" id="rollSub"></div>
     </div>
 
+    <div class="card" id="cardsCard"></div>
+
     <div class="card">
-      <div class="label">Roll chances (all pieces except the king)</div>
+      <div class="label" data-t="rollChances"></div>
       <div class="king-row"><span class="swatch w"></span><div class="chips" id="oddsW"></div></div>
       <div class="king-row" style="margin-bottom:14px"><span class="swatch b"></span><div class="chips" id="oddsB"></div></div>
-      <div class="label">Kings can move as</div>
+      <div class="label" data-t="kingsMoveAs"></div>
       <div class="king-row"><span class="swatch w"></span><div class="chips" id="kingW"></div></div>
       <div class="king-row"><span class="swatch b"></span><div class="chips" id="kingB"></div></div>
     </div>
 
     <div class="card">
       <div class="side">
-        <div class="label">Captured by White</div>
+        <div class="label" id="capWLabel"></div>
         <div class="captured" id="capW"></div>
       </div>
       <div class="side">
-        <div class="label">Captured by Black</div>
+        <div class="label" id="capBLabel"></div>
         <div class="captured" id="capB"></div>
       </div>
     </div>
 
     <div class="card">
-      <div class="label">Moves</div>
+      <div class="label" data-t="moves"></div>
       <div class="log" id="log"></div>
     </div>
 
     <div class="card rules">
       <details>
-        <summary>Rules</summary>
-        <ul>
-          <li>Click one of your pieces. It gets a random move type (pawn, rook, knight, bishop, queen or king).</li>
-          <li>Each piece gets one roll per turn. If it can't move, pick another piece. Once a piece can move, you must move it.</li>
-          <li>Check uses each piece's real type, as in normal chess.</li>
-          <li>Each time a king is checked it loses one move type at random. It never loses "king".</li>
-          <li>Checkmate: in check with no escape under any roll your pieces have left.</li>
-          <li>When a pawn reaches the far side, pick a move type: it's added to your roll list again, doubling its chance for all your pieces except the king. Each pawn does this once.</li>
-        </ul>
+        <summary data-t="rulesTitle"></summary>
+        <ul id="rulesList"></ul>
       </details>
     </div>
 
-    <button id="newGame">New game</button>
+    <button id="newGame"></button>
   </div>
 </div>
 
 <div class="overlay" id="promo">
   <div class="box">
-    <h2>Pawn reached the end!</h2>
-    <p>Pick a move type. It gets added to your roll list again, doubling its chance (all your pieces except the king).</p>
+    <h2 data-t="pawnEndTitle"></h2>
+    <p data-t="pawnEndText"></p>
     <div class="promo-grid" id="promoGrid"></div>
+  </div>
+</div>
+
+<div class="overlay" id="discard">
+  <div class="box wide">
+    <h2 data-t="discardTitle"></h2>
+    <p data-t="discardText"></p>
+    <div class="discard-list" id="discardList"></div>
   </div>
 </div>
 
@@ -306,242 +345,114 @@
   <div class="box">
     <h2 id="overTitle"></h2>
     <p id="overText"></p>
-    <div class="row-btns"><button id="overClose">See board</button><button id="overNew" class="primary">Play again</button></div>
+    <div class="row-btns"><button id="overClose" data-t="seeBoard"></button><button id="overNew" class="primary" data-t="playAgain"></button></div>
   </div>
 </div>
 
 <script>
-const TYPES = ["pawn", "rook", "knight", "bishop", "queen", "king"];
+const G = window.Game;
+const { TYPES, PROMO_TYPES, FILES, key, other, toSquare, isKing, rand, samePos, realType, squares, optionsFor } = G;
 const GLYPH = { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" };
 const VS = "︎"; // force text style so the pawn isn't drawn as an emoji
-const NAMES = { w: "White", b: "Black" };
-const FILES = "abcdefgh";
-const ROOK_DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
-const BISHOP_DIRS = [[1,1],[1,-1],[-1,1],[-1,-1]];
-const KNIGHT_JUMPS = [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
-const KING_STEPS = ROOK_DIRS.concat(BISHOP_DIRS);
-const PIECE_RE = /^[wb]_(king|queen|rook2?|bishop2?|knight2?|paw[1-8])$/;
-const LOG_MAX = 14;
+const LEVELED = new Set(["barricade", "abra", "nomad"]);
+
+// ---------- language ----------
+let lang = "en";
+try { lang = localStorage.getItem("rc-lang") || ((navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en"); } catch (e) {}
+if (!LANGS[lang]) lang = "en";
+const L = () => LANGS[lang];
+const tx = (k, ...a) => { const v = L()[k]; return typeof v === "function" ? v(...a) : v; };
+const colName = c => L().colors[c] || c;
+const typName = t => L().types[t] || t;
+const cardName = (t, l) => L().cards[t] + (LEVELED.has(t) ? L().lvl(l) : "");
+// turn raw log/note arguments into words: "w" -> White, "rook" -> rook
+const word = x => x === "w" || x === "b" ? colName(x) : TYPES.includes(x) ? typName(x) : x;
 
 // ---------- state ----------
-// S is the whole game. Online, it is shared between players through room presence.
 let S;
 let mode = "local";        // "local" (hot-seat) or "online"
 let gameCode = null;
 let myRole = null;         // "w", "b" or "spectator" when online
-let rotateLocal = true;  // hot-seat: turn the board to face whoever is moving
+let rotateLocal = true;
 try { rotateLocal = localStorage.getItem("rc-rotate") !== "0"; } catch (e) {}
 let connected = false, opponentHere = false, onlineError = "";
 let rolling = false, flash = null, overDismissed = false, restartArmed = null;
+let targeting = null;      // { idx } while picking a square for a card
 
-function startBoard() {
-  const b = {};
-  const back = ["rook","knight","bishop","queen","king","bishop2","knight2","rook2"];
-  back.forEach((n, c) => { b["b_" + n] = [0, c]; b["w_" + n] = [7, c]; });
-  for (let c = 0; c < 8; c++) { b["b_paw" + (c+1)] = [1, c]; b["w_paw" + (c+1)] = [6, c]; }
-  return b;
+// who is looking at the screen (hot-seat: whoever is moving)
+function viewer() { return mode === "online" ? myRole : S.turn; }
+function isPlayer(v) { return v === "w" || v === "b"; }
+function myTurn() { return !S.over && (mode === "local" || myRole === S.turn); }
+// Abracadabra on the viewer: their own pieces look like one type, and the log is hidden
+function disguiseOnViewer() { const v = viewer(); return isPlayer(v) ? S.disguise[v] : null; }
+function pieceName(p) {
+  const d = disguiseOnViewer();
+  return colName(p[0]) + " " + (d && p[0] === viewer() ? L().piece : typName(realType(p)));
 }
+function turnsLeft(until) { return Math.max(1, Math.ceil((until - S.ply) / 2)); }
 
-function freshState(seq = 0) {
-  const s = {
-    board: startBoard(),
-    kingOptions: { w: TYPES.slice(), b: TYPES.slice() },
-    captured: { w: [], b: [] },
-    turn: "w", deadRolls: {}, locked: null, lastRoll: null,
-    checked: false, note: null, over: null, log: [], seq,
-    rollLists: { w: TYPES.slice(), b: TYPES.slice() },  // each side's roll list (not the king)
-    promoted: [], pendingPromo: null,
-  };
-  beginTurn(s);
-  return s;
-}
-
-// ---------- helpers ----------
-const key = (r, c) => r + "," + c;
-const onBoard = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
-const other = col => col === "w" ? "b" : "w";
-const toSquare = ([r, c]) => FILES[c] + (8 - r);
-const isKing = p => p.endsWith("_king");
-const rand = arr => arr[Math.floor(Math.random() * arr.length)];
-
-function realType(p) {
-  const name = p.slice(2).replace(/\d+$/, "");
-  return name === "paw" ? "pawn" : name;
-}
-function squares(b) {
-  const m = {};
-  for (const p in b) m[key(...b[p])] = p;
-  return m;
-}
-function optionsFor(p, s) { return isKing(p) ? s.kingOptions[p[0]] : s.rollLists[p[0]]; }
-const PROMO_TYPES = ["rook", "knight", "bishop", "queen", "king"];
-function pretty(p) { return NAMES[p[0]] + " " + realType(p); }
-function addLog(s, text) { s.log.push(text); if (s.log.length > LOG_MAX) s.log = s.log.slice(-LOG_MAX); }
-
-// ---------- movement ----------
-function slide(occ, p, [r0, c0], dirs) {
-  const out = [];
-  for (const [dr, dc] of dirs) {
-    let r = r0 + dr, c = c0 + dc;
-    while (onBoard(r, c)) {
-      const o = occ[key(r, c)];
-      if (!o) out.push([r, c]);
-      else { if (o[0] !== p[0]) out.push([r, c]); break; }
-      r += dr; c += dc;
-    }
-  }
-  return out;
-}
-function step(occ, p, [r0, c0], offs) {
-  const out = [];
-  for (const [dr, dc] of offs) {
-    const r = r0 + dr, c = c0 + dc;
-    if (!onBoard(r, c)) continue;
-    const o = occ[key(r, c)];
-    if (!o || o[0] !== p[0]) out.push([r, c]);
-  }
-  return out;
-}
-function movesForType(occ, p, loc, t) {
-  switch (t) {
-    case "pawn": {
-      const r = loc[0] + (p[0] === "b" ? 1 : -1), c = loc[1];
-      return onBoard(r, c) && !occ[key(r, c)] ? [[r, c]] : [];
-    }
-    case "rook": return slide(occ, p, loc, ROOK_DIRS);
-    case "bishop": return slide(occ, p, loc, BISHOP_DIRS);
-    case "queen": return slide(occ, p, loc, KING_STEPS);
-    case "knight": return step(occ, p, loc, KNIGHT_JUMPS);
-    case "king": return step(occ, p, loc, KING_STEPS);
-  }
-  return [];
-}
-function applyMove(b, p, pos) {
-  const taken = squares(b)[key(...pos)];
-  if (taken) delete b[taken];
-  b[p] = pos;
-  return taken;
-}
-
-// ---------- check ----------
-function inCheck(b, col) {
-  const k = b[col + "_king"];
-  if (!k) return true;
-  const occ = squares(b);
-  for (const p in b) {
-    if (p[0] === col) continue;
-    const t = realType(p), loc = b[p];
-    let attacks;
-    if (t === "pawn") {
-      const d = p[0] === "b" ? 1 : -1;
-      attacks = [[loc[0] + d, loc[1] - 1], [loc[0] + d, loc[1] + 1]];
-    } else {
-      attacks = movesForType(occ, p, loc, t);
-    }
-    if (attacks.some(([r, c]) => r === k[0] && c === k[1])) return true;
-  }
-  return false;
-}
-function legalMoves(b, p, t) {
-  return movesForType(squares(b), p, b[p], t).filter(m => {
-    const test = { ...b };
-    applyMove(test, p, m);
-    return !inCheck(test, p[0]);
-  });
-}
-function hasAnyLegalMove(b, col, s) {
-  for (const p in b) {
-    if (p[0] !== col) continue;
-    for (const t of new Set(optionsFor(p, s))) if (legalMoves(b, p, t).length) return true;
-  }
-  return false;
-}
-
-// ---------- turn logic (runs on the mover's device only, so online games stay in sync) ----------
-function beginTurn(s) {
-  s.deadRolls = {};
-  s.locked = null;
-  s.note = null;
-  const t = s.turn, opp = other(t);
-
-  if (!s.board[t + "_king"]) {
-    s.checked = false;
-    s.over = { title: `${NAMES[opp]} wins!`, text: `${NAMES[opp]} captured the king.` };
-    addLog(s, s.over.title + " " + s.over.text);
-    return;
-  }
-
-  s.checked = inCheck(s.board, t);
-  if (s.checked) {
-    const removable = s.kingOptions[t].filter(x => x !== "king");
-    if (removable.length) {
-      const lost = rand(removable);
-      s.kingOptions[t] = s.kingOptions[t].filter(x => x !== lost);
-      addLog(s, `${NAMES[t]} is in check. King lost ${lost}.`);
-      s.note = `Check! ${NAMES[t]}'s king lost its ${lost} move.`;
-    } else {
-      addLog(s, `${NAMES[t]} is in check.`);
-      s.note = `Check! ${NAMES[t]}'s king is already just a king.`;
-    }
-  }
-
-  if (!hasAnyLegalMove(s.board, t, s)) {
-    s.over = s.checked
-      ? { title: "Checkmate!", text: `${NAMES[opp]} wins.` }
-      : { title: "Stalemate", text: "It's a draw." };
-    addLog(s, s.over.title + " " + s.over.text);
-  }
-}
-
-function canAct() {
-  if (S.over || rolling || S.pendingPromo) return false;
-  if (mode === "online") return myRole === S.turn;
-  return true;
-}
-
+// ---------- actions (each changes S, then commit() shares it) ----------
 function clickSquare(r, c) {
   if (S.over) return;
   if (mode === "online" && myRole !== S.turn) {
-    flashMsg(myRole === "spectator" ? "You're watching this game." : `Wait for ${NAMES[S.turn]} to move.`, true);
+    flashMsg(myRole === "spectator" ? tx("msgWatch") : tx("msgWait", colName(S.turn)), true);
     return;
   }
-  if (S.pendingPromo) { flashMsg("Choose a move type for your pawn first.", true); return; }
-  if (!canAct()) return;
-  const p = squares(S.board)[key(r, c)];
-
+  if (rolling) return;
+  if (S.hands[S.turn].length > G.HAND_MAX) { flashMsg(tx("msgDiscard"), true); return; }
+  if (targeting) {
+    const card = S.hands[S.turn][targeting.idx];
+    if (card && G.validTarget(S, card, [r, c])) { const i = targeting.idx; targeting = null; G.useCard(S, i, [r, c]); commit(); }
+    else flashMsg(tx("msgBadTarget"), true);
+    return;
+  }
+  if (S.pendingCopy) {
+    if (G.placeCopy(S, [r, c])) commit();
+    else flashMsg(tx("msgCopy", typName(S.pendingCopy.type)), true);
+    return;
+  }
+  if (S.pendingPromo) { flashMsg(tx("msgPromo"), true); return; }
+  if (S.postCard) { flashMsg(tx("msgPost"), true); return; }
   if (S.locked) {
-    if (S.locked.moves.some(([mr, mc]) => mr === r && mc === c)) return makeMove(r, c);
-    flashMsg(`This piece rolled ${S.locked.roll}. You must move it to a green square.`, true);
+    if (G.makeMove(S, r, c)) return commit();
+    flashMsg(tx("msgMustMove", typName(S.locked.roll)), true);
     return;
   }
+  const p = squares(S.board)[key(r, c)];
   if (!p) return;
-  if (p[0] !== S.turn) { flashMsg(`That's a ${NAMES[p[0]]} piece. It's ${NAMES[S.turn]}'s turn.`, true); return; }
-  if (S.deadRolls[p]) { flashMsg(`That piece already rolled ${S.deadRolls[p]} this turn. No re-rolls, pick another piece.`, true); return; }
+  if (p[0] !== S.turn) { flashMsg(tx("msgWrongColor", colName(p[0]), colName(S.turn)), true); return; }
+  if (G.isFrozen(S, p)) { flashMsg(tx("msgFrozen"), true); return; }
+  if (S.deadRolls[p]) { flashMsg(tx("msgDead", typName(S.deadRolls[p])), true); return; }
 
   const roll = rand(optionsFor(p, S));
   const game = S;
   animateRoll(roll, () => {
     if (S !== game) return; // a restart, leave or new online game happened mid-roll
-    const moves = legalMoves(S.board, p, roll);
-    S.lastRoll = { piece: p, roll };
-    if (!moves.length) {
-      S.deadRolls[p] = roll;
-      const own = Object.keys(S.board).filter(q => q[0] === S.turn);
-      if (own.every(q => S.deadRolls[q])) {
-        addLog(S, `${NAMES[S.turn]} couldn't move with any roll. Turn skipped.`);
-        S.turn = other(S.turn);
-        beginTurn(S);
-        commit(true);
-        return;
-      }
-      commit(true);
-      flashMsg(`${pretty(p)} rolled ${roll} and can't move. Pick another piece.`, true);
-    } else {
-      S.locked = { piece: p, roll, moves };
-      commit(true);
-    }
+    const name = pieceName(p);
+    const result = G.resolveRoll(S, p, roll);
+    commit();
+    if (result === "dead") flashMsg(tx("msgCantMove", name, typName(roll)), true);
   });
 }
+
+function onUseCard(idx) {
+  if (!myTurn() || rolling) return;
+  if (targeting && targeting.idx === idx) { targeting = null; return render(); }
+  if (!G.canUseCard(S)) { flashMsg(tx("msgNoCardNow"), true); return; }
+  const card = S.hands[S.turn][idx];
+  if (!card) return;
+  if (G.cardTarget(card)) { targeting = { idx }; render(); flashMsg(tx("msgTarget", cardName(card.t, card.l))); return; }
+  if (G.useCard(S, idx)) commit();
+}
+function onBuy(i) {
+  if (!myTurn() || rolling) return;
+  if (!G.canBuy(S)) { flashMsg(tx("msgNoBuyNow"), true); return; }
+  if (S.points[S.turn] < G.SHOP[i][2]) { flashMsg(tx("msgPoor"), true); return; }
+  if (G.buy(S, i)) commit();
+}
+function onDiscard(idx) { if (myTurn() && G.discard(S, S.turn, idx)) commit(); }
+function onEndPost() { if (myTurn() && G.endPostCard(S)) commit(); }
+function onPromotion(type) { if (myTurn() && G.choosePromotion(S, type)) commit(); }
 
 function animateRoll(final, done) {
   rolling = true;
@@ -549,7 +460,7 @@ function animateRoll(final, done) {
   el.classList.add("rolling");
   let i = 0;
   const timer = setInterval(() => {
-    el.textContent = rand(TYPES);
+    el.textContent = typName(rand(TYPES));
     if (++i >= 8) {
       clearInterval(timer);
       el.classList.remove("rolling");
@@ -559,110 +470,23 @@ function animateRoll(final, done) {
   }, 45);
 }
 
-function makeMove(r, c) {
-  const { piece, roll } = S.locked;
-  const from = toSquare(S.board[piece]);
-  const taken = applyMove(S.board, piece, [r, c]);
-  let line = `${NAMES[S.turn]}: ${realType(piece)} ${from} → ${toSquare([r, c])} (as ${roll})`;
-  if (taken) {
-    S.captured[S.turn].push(taken);
-    line += `, took ${realType(taken)}`;
-  }
-  addLog(S, line);
-  S.lastRoll = null;
-  S.locked = null;
-
-  // A pawn reaching the far side lets its player double a move type's chance (once per pawn)
-  const lastRow = piece[0] === "w" ? 0 : 7;
-  if (realType(piece) === "pawn" && r === lastRow && !S.promoted.includes(piece)) {
-    S.pendingPromo = { piece };
-    commit(true);
-    return;
-  }
-  endTurn();
-}
-
-function endTurn() {
-  S.turn = other(S.turn);
-  beginTurn(S);
-  commit(true);
-}
-
-function choosePromotion(type) {
-  if (!S.pendingPromo || !PROMO_TYPES.includes(type)) return;
-  if (mode === "online" && myRole !== S.turn) return;
-  S.rollLists[S.turn].push(type);
-  S.promoted.push(S.pendingPromo.piece);
-  addLog(S, `${NAMES[S.turn]}'s pawn reached the end: +1 ${type} in their rolls.`);
-  S.pendingPromo = null;
-  endTurn();
-}
-
 function restart() {
-  S = freshState((S ? S.seq : 0) + 1);
-  overDismissed = false;
-  flash = null;
+  S = G.freshState((S ? S.seq : 0) + 1);
+  overDismissed = false; flash = null; targeting = null;
   publish(true);
   render();
 }
 
 // ---------- syncing (WebSocket to your server) ----------
-function commit(bump) {
-  if (bump) S.seq++;
+function commit() {
+  S.seq++;
   flash = null;
+  if (targeting && !G.canUseCard(S)) targeting = null;
   publish(false);
   render();
 }
-
 function publish(isRestart) {
   if (mode === "online" && myRole !== "spectator") send({ type: "state", state: S, restart: !!isRestart });
-}
-
-// Anything that arrives from the server or the other player is checked before it's used.
-function valid(s) {
-  const isPos = v => Array.isArray(v) && v.length === 2 && v.every(n => Number.isInteger(n) && n >= 0 && n < 8);
-  const isPiece = p => typeof p === "string" && PIECE_RE.test(p);
-  const isType = t => TYPES.includes(t);
-  try {
-    if (!s || typeof s !== "object" || !Number.isInteger(s.seq)) return false;
-    if (s.turn !== "w" && s.turn !== "b") return false;
-    if (!s.board || typeof s.board !== "object") return false;
-    const seen = new Set();
-    for (const p in s.board) {
-      if (!isPiece(p) || !isPos(s.board[p])) return false;
-      const k = key(...s.board[p]);
-      if (seen.has(k)) return false;
-      seen.add(k);
-    }
-    for (const col of ["w", "b"]) {
-      const ko = s.kingOptions && s.kingOptions[col];
-      if (!Array.isArray(ko) || !ko.every(isType) || !ko.includes("king")) return false;
-      const cap = s.captured && s.captured[col];
-      if (!Array.isArray(cap) || !cap.every(isPiece)) return false;
-    }
-    if (!s.deadRolls || typeof s.deadRolls !== "object") return false;
-    for (const p in s.deadRolls) if (!isPiece(p) || !isType(s.deadRolls[p])) return false;
-    // games saved before promotions existed
-    if (s.rollLists === undefined) s.rollLists = { w: TYPES.slice(), b: TYPES.slice() };
-    if (s.promoted === undefined) s.promoted = [];
-    if (s.pendingPromo === undefined) s.pendingPromo = null;
-    for (const col of ["w", "b"]) {
-      const rl = s.rollLists && s.rollLists[col];
-      if (!Array.isArray(rl) || rl.length > 40 || !rl.every(isType) || !TYPES.every(t => rl.includes(t))) return false;
-    }
-    if (!Array.isArray(s.promoted) || !s.promoted.every(isPiece)) return false;
-    if (s.pendingPromo !== null && (!s.pendingPromo || !isPiece(s.pendingPromo.piece))) return false;
-    if (s.locked !== null) {
-      const l = s.locked;
-      if (!l || !isPiece(l.piece) || !s.board[l.piece] || !isType(l.roll)) return false;
-      if (!Array.isArray(l.moves) || !l.moves.every(isPos)) return false;
-    }
-    if (s.lastRoll !== null && (!s.lastRoll || !isPiece(s.lastRoll.piece) || !isType(s.lastRoll.roll))) return false;
-    if (s.over !== null && (!s.over || typeof s.over.title !== "string" || typeof s.over.text !== "string")) return false;
-    if (s.note !== null && typeof s.note !== "string") return false;
-    if (!Array.isArray(s.log) || !s.log.every(x => typeof x === "string")) return false;
-    return true;
-  } catch (e) { return false; }
 }
 
 let ws = null;
@@ -686,12 +510,11 @@ function openSocket(firstMessage) {
   const sock = new WebSocket(url);
   ws = sock;
   sock.onopen = () => { connected = true; onlineError = ""; send(firstMessage()); render(); };
-  sock.onmessage = e => { try { handleServer(JSON.parse(e.data)); } catch (err) {} };
+  sock.onmessage = e => { try { handleServer(JSON.parse(e.data)); } catch (err) { console.error(err); } };
   sock.onclose = () => {
     if (ws !== sock) return;
     connected = false; opponentHere = false;
     render();
-    // reconnect and rejoin the same game
     setTimeout(() => {
       if (ws === sock && mode === "online" && gameCode) {
         openSocket(() => ({ type: "join", code: gameCode, playerId: playerId() }));
@@ -702,19 +525,20 @@ function openSocket(firstMessage) {
 
 function handleServer(m) {
   if (m.type === "joined") {
-    if (!valid(m.state)) return;
+    if (!G.valid(m.state)) return;
     gameCode = m.code;
     myRole = m.role;
     S = m.state;
-    overDismissed = false;
+    overDismissed = false; targeting = null;
     if (location.hash !== "#play-" + m.code) location.hash = "play-" + m.code;
   } else if (m.type === "state") {
-    if (!valid(m.state) || rolling) return;
+    if (!G.valid(m.state) || rolling) return;
     if (m.state.seq <= S.seq && !m.force) return;
     const wasOver = !!S.over;
     S = m.state;
     if (!S.over || !wasOver) overDismissed = false;
     flash = null;
+    if (targeting && !(myTurn() && G.canUseCard(S))) targeting = null;
   } else if (m.type === "peers") {
     opponentHere = myRole === "w" ? !!m.b : myRole === "b" ? !!m.w : !!(m.w && m.b);
   } else if (m.type === "error") {
@@ -726,81 +550,141 @@ function handleServer(m) {
 
 function createOnline() {
   mode = "online";
-  myRole = null; gameCode = null; onlineError = "";
-  S = freshState(1);
+  myRole = null; gameCode = null; onlineError = ""; targeting = null;
+  S = G.freshState(1);
   overDismissed = false;
   render();
   openSocket(() => ({ type: "create", playerId: playerId(), state: S }));
 }
-
 function connectOnline(code) {
   mode = "online";
-  gameCode = code; myRole = null; onlineError = "";
-  S = freshState(0);
+  gameCode = code; myRole = null; onlineError = ""; targeting = null;
+  S = G.freshState(0);
   render();
   openSocket(() => ({ type: "join", code, playerId: playerId() }));
 }
-
 function leaveOnline() {
   if (ws) { const s = ws; ws = null; s.onclose = null; s.close(); }
-  gameCode = null; myRole = null; mode = "local";
+  gameCode = null; myRole = null; mode = "local"; targeting = null;
   connected = false; opponentHere = false; onlineError = "";
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
-  S = freshState();
+  S = G.freshState();
   overDismissed = false;
   render();
 }
-
 function readHash() {
   const m = location.hash.match(/^#play-([a-z0-9]{6,16})$/);
   if (m && m[1] !== gameCode) connectOnline(m[1]);
 }
 
 // ---------- rendering ----------
+function esc(s) { return String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])); }
 function flashMsg(text, warn) { flash = { text, warn }; renderMsg(); }
+
+function noteText(n) { return n ? tx(n.k, ...n.a.map(word)) : ""; }
 
 function renderMsg() {
   const el = document.getElementById("msg");
+  const mover = myTurn();
   let text, warn = false;
   if (flash) { text = flash.text; warn = flash.warn; }
-  else if (S.over) { text = `${S.over.title} ${S.over.text}`; }
-  else if (S.pendingPromo && mode === "online" && myRole !== S.turn) text = `${NAMES[S.turn]}'s pawn reached the end. They're choosing a bonus…`;
-  else if (S.pendingPromo) text = "Your pawn reached the end! Choose a move type to double its chance.";
-  else if (mode === "online" && myRole !== S.turn) {
-    text = myRole === "spectator" ? "You're watching this game." : `Waiting for ${NAMES[S.turn]}…`;
-    if (S.note) { text = S.note + " " + text; warn = true; }
+  else if (S.over) { const [a, b] = overText(); text = `${a} ${b}`; }
+  else if (!mover) {
+    if (S.pendingPromo) text = tx("msgPromoOpp", colName(S.turn));
+    else if (S.pendingCopy) text = tx("msgCopyOpp", colName(S.turn));
+    else if (S.postCard) text = tx("msgPostOpp", colName(S.turn));
+    else {
+      text = myRole === "spectator" ? tx("msgWatch") : tx("msgWaiting", colName(S.turn));
+      if (S.note) { text = noteText(S.note) + " " + text; warn = true; }
+    }
   }
-  else if (S.locked) text = `${pretty(S.locked.piece)} on ${toSquare(S.board[S.locked.piece])} moves as a ${S.locked.roll}. Click a green square.`;
-  else if (S.note) { text = S.note + " Click a piece to roll."; warn = true; }
-  else text = "Click one of your pieces to roll.";
+  else if (S.hands[S.turn].length > G.HAND_MAX) { text = tx("msgDiscard"); warn = true; }
+  else if (targeting) { const c = S.hands[S.turn][targeting.idx]; text = c ? tx("msgTarget", cardName(c.t, c.l)) : ""; }
+  else if (S.pendingCopy) text = tx("msgCopy", typName(S.pendingCopy.type));
+  else if (S.pendingPromo) text = tx("msgPromo");
+  else if (S.postCard) text = tx("msgPost");
+  else if (S.locked) text = tx("msgLocked", pieceName(S.locked.piece), toSquare(S.board[S.locked.piece]), typName(S.locked.roll));
+  else {
+    const base = G.canUseCard(S) && S.hands[S.turn].length ? tx("msgClick") : tx("msgClickNoCard");
+    if (S.note) { text = noteText(S.note) + " " + base; warn = true; } else text = base;
+  }
   el.textContent = text;
   el.className = "msg" + (warn ? " warn" : "");
 }
 
-function glyph(p, extra = "") {
-  const t = realType(p);
-  if (!GLYPH[t]) return "";
-  return `<span class="piece ${p[0] === "w" ? "w" : "b"} ${extra}">${GLYPH[t]}${VS}</span>`;
+function overText() {
+  const o = S.over;
+  if (o.k === "raw") return [o.title, o.text];
+  return L().over[o.k](colName(o.w));
+}
+
+function logText(e) {
+  const v = viewer(), a = e.a;
+  const hide = e.o && isPlayer(v) && e.o !== v;   // someone else's private card info
+  const lg = L().log;
+  switch (e.k) {
+    case "got": return hide ? lg.gotHidden(colName(a[0])) : lg.got(colName(a[0]), cardName(a[1], a[2]), L().reasons[a[3]] || "");
+    case "bought": return hide ? lg.boughtHidden(colName(a[0])) : lg.bought(colName(a[0]), cardName(a[1], a[2]), a[3]);
+    case "discarded": return hide ? lg.discardedHidden(colName(a[0])) : lg.discarded(colName(a[0]), cardName(a[1], a[2]));
+    case "useBarricade": return lg.useBarricade(colName(a[0]), cardName("barricade", a[1]), a[2], a[3] ? colName(a[3]) : "");
+    case "useAbra": return lg.useAbra(colName(a[0]), cardName("abra", a[1]));
+    case "useNomad": return lg.useNomad(colName(a[0]), cardName("nomad", a[1]));
+    case "over": return lg.over(a[0], colName(a[1]));
+  }
+  return lg[e.k] ? lg[e.k](...a.map(word)) : e.k;
+}
+
+function glyphHtml(type, col, extra = "") {
+  return `<span class="piece ${col} ${extra}">${GLYPH[type]}${VS}</span>`;
+}
+// how a board piece looks to the viewer (Abracadabra changes the viewer's own pieces)
+function boardGlyph(p, extra) {
+  const d = disguiseOnViewer();
+  let t = realType(p);
+  if (d && p[0] === viewer()) {
+    if (!isKing(p)) t = d.type;
+    else if (d.type === "king") extra += " gold";
+  }
+  return glyphHtml(t, p[0], extra);
+}
+
+function applyStatic() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-t]").forEach(el => { el.textContent = tx(el.dataset.t); });
+  document.getElementById("rulesList").innerHTML = L().rules.map(r => `<li>${esc(r)}</li>`).join("");
+  document.getElementById("promoGrid").innerHTML = PROMO_TYPES.map(t =>
+    `<button data-type="${t}"><span class="g">${GLYPH[t]}${VS}</span>${esc(typName(t))}</button>`).join("");
 }
 
 function render() {
+  const v = viewer(), mover = myTurn(), dis = disguiseOnViewer();
   const flipped = mode === "online" ? myRole === "b" : rotateLocal && S.turn === "b";
   const occ = squares(S.board);
-  const moveSet = new Set((S.locked ? S.locked.moves : []).map(m => key(...m)));
+  const moveSet = new Set((S.locked && !targeting ? S.locked.moves : []).map(m => key(...m)));
+  const copySet = new Set((S.pendingCopy && mover ? S.pendingCopy.squares : []).map(m => key(...m)));
+  const lockMap = new Map(S.locks.map(l => [key(...l.sq), l]));
+  const mineSet = new Set(S.mines.filter(m => m.by === v && m.at === S.ply && isPlayer(v)).map(m => key(...m.sq)));
+  const targetCard = targeting ? S.hands[S.turn][targeting.idx] : null;
   const kingPos = S.board[S.turn + "_king"];
   const sel = S.locked ? S.board[S.locked.piece] : null;
 
   let html = "";
   for (let dr = 0; dr < 8; dr++) {
     for (let dc = 0; dc < 8; dc++) {
-      const r = flipped ? 7 - dr : dr, c = flipped ? 7 - dc : dc;
-      const p = occ[key(r, c)];
+      const r = flipped ? 7 - dr : dr, c = flipped ? 7 - dc : dc, k = key(r, c);
+      const p = occ[k];
       const cls = ["sq", (r + c) % 2 ? "dark" : "light"];
       if (sel && sel[0] === r && sel[1] === c) cls.push("selected");
       if (S.checked && kingPos && kingPos[0] === r && kingPos[1] === c) cls.push("check");
+      const lock = lockMap.get(k);
+      if (lock) cls.push("locked");
+      if (targetCard && G.validTarget(S, targetCard, [r, c])) cls.push("target");
       let inner = "";
-      if (p) inner += glyph(p, S.deadRolls[p] ? "dead" : "");
-      if (moveSet.has(key(r, c))) inner += p ? '<span class="ring"></span>' : '<span class="dot"></span>';
+      if (p) inner += boardGlyph(p, (S.deadRolls[p] ? "dead" : "") + (lock && !isKing(p) ? " frozen" : ""));
+      if (lock) inner += `<span class="lock-n">${turnsLeft(lock.until)}</span>`;
+      if (mineSet.has(k)) inner += '<span class="mine-mark">✹</span>';
+      if (moveSet.has(k)) inner += p ? '<span class="ring"></span>' : '<span class="dot"></span>';
+      if (copySet.has(k)) inner += '<span class="dot gold"></span>';
       html += `<div class="${cls.join(" ")}" data-r="${r}" data-c="${c}">${inner}</div>`;
     }
   }
@@ -812,119 +696,190 @@ function render() {
 
   // turn
   document.getElementById("turnSwatch").className = "swatch " + S.turn;
-  let turnText = S.over ? "Game over" : `${NAMES[S.turn]} to move`;
-  if (!S.over && mode === "online" && myRole === S.turn) turnText = `Your turn (${NAMES[S.turn]})`;
+  let turnText = S.over ? tx("gameOver") : tx("toMove", colName(S.turn));
+  if (!S.over && mode === "online" && myRole === S.turn) turnText = tx("yourTurn", colName(S.turn));
   document.getElementById("turnText").textContent = turnText;
   renderMsg();
 
   // roll
   if (!rolling) {
-    const rollEl = document.getElementById("roll");
-    const sub = document.getElementById("rollSub");
-    if (S.locked) { rollEl.textContent = S.locked.roll; sub.textContent = `${pretty(S.locked.piece)} on ${toSquare(S.board[S.locked.piece])}`; }
-    else if (S.lastRoll && S.board[S.lastRoll.piece]) { rollEl.textContent = S.lastRoll.roll; sub.textContent = `${pretty(S.lastRoll.piece)} couldn't move`; }
+    const rollEl = document.getElementById("roll"), sub = document.getElementById("rollSub");
+    if (S.locked) { rollEl.textContent = typName(S.locked.roll); sub.textContent = `${pieceName(S.locked.piece)} · ${toSquare(S.board[S.locked.piece])}`; }
+    else if (S.lastRoll && S.board[S.lastRoll.piece]) { rollEl.textContent = typName(S.lastRoll.roll); sub.textContent = `${pieceName(S.lastRoll.piece)} ✗`; }
     else { rollEl.textContent = "—"; sub.textContent = ""; }
   }
 
   for (const col of ["w", "b"]) {
-    document.getElementById("king" + col.toUpperCase()).innerHTML = TYPES.map(t =>
-      `<span class="chip ${S.kingOptions[col].includes(t) ? "" : "lost"}">${t}</span>`).join("");
+    const C = col.toUpperCase();
+    document.getElementById("king" + C).innerHTML = TYPES.map(t =>
+      `<span class="chip ${S.kingOptions[col].includes(t) ? "" : "lost"}">${esc(typName(t))}</span>`).join("");
+    document.getElementById("cap" + C + "Label").textContent = tx("capturedBy", colName(col));
     const caps = S.captured[col];
-    document.getElementById("cap" + col.toUpperCase()).innerHTML =
-      caps.length ? caps.map(p => glyph(p)).join("") : '<span class="none">Nothing yet</span>';
+    document.getElementById("cap" + C).innerHTML = dis
+      ? `<span class="none">${esc(tx("hiddenAbra"))}</span>`
+      : caps.length ? caps.map(p => glyphHtml(realType(p), p[0])).join("") : `<span class="none">${esc(tx("nothingYet"))}</span>`;
+    const list = S.rollLists[col];
+    document.getElementById("odds" + C).innerHTML = TYPES.map(t => {
+      const n = list.filter(x => x === t).length;
+      return `<span class="chip">${esc(typName(t))}${n > 1 ? " ×" + n : ""} · ${Math.round(n / list.length * 100)}%</span>`;
+    }).join("");
   }
 
   const logEl = document.getElementById("log");
   logEl.textContent = "";
-  if (!S.log.length) { const d = document.createElement("div"); d.textContent = "No moves yet."; logEl.appendChild(d); }
-  for (const line of S.log) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
+  const lines = dis ? [tx("hiddenAbra")] : S.log.length ? S.log.map(logText) : [tx("noMoves")];
+  for (const line of lines) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
 
   // game over popup
   const ov = document.getElementById("overlay");
   if (S.over && !overDismissed) {
-    document.getElementById("overTitle").textContent = S.over.title;
-    document.getElementById("overText").textContent = S.over.text;
+    const [a, b] = overText();
+    document.getElementById("overTitle").textContent = a;
+    document.getElementById("overText").textContent = b;
     ov.classList.add("show");
   } else ov.classList.remove("show");
 
-  // roll chances, e.g. "rook ×2 · 29%"
-  for (const col of ["w", "b"]) {
-    const list = S.rollLists[col];
-    document.getElementById("odds" + col.toUpperCase()).innerHTML = TYPES.map(t => {
-      const n = list.filter(x => x === t).length;
-      const pct = Math.round(n / list.length * 100);
-      return `<span class="chip">${t}${n > 1 ? " ×" + n : ""} · ${pct}%</span>`;
-    }).join("");
+  // discard (more than 7 cards) comes before everything else for the mover
+  const mustDiscard = mover && S.hands[S.turn].length > G.HAND_MAX;
+  document.getElementById("discard").classList.toggle("show", mustDiscard);
+  if (mustDiscard) {
+    document.getElementById("discardList").innerHTML = S.hands[S.turn].map((c, i) =>
+      `<div class="card-item k-${c.t}"><div class="body"><div class="name">${esc(cardName(c.t, c.l))}</div></div>
+       <button data-discard="${i}">✕</button></div>`).join("");
   }
-
-  // promotion chooser, only for the player who has to choose
-  const promo = document.getElementById("promo");
-  const mine = S.pendingPromo && !S.over && (mode === "local" || myRole === S.turn);
-  promo.classList.toggle("show", !!mine);
+  document.getElementById("promo").classList.toggle("show", !!(S.pendingPromo && mover && !mustDiscard));
 
   const ng = document.getElementById("newGame");
-  ng.textContent = restartArmed ? "Click again to restart" : "New game";
+  ng.textContent = restartArmed ? tx("clickAgain") : tx("newGame");
   ng.style.display = mode === "online" && myRole === "spectator" ? "none" : "";
 
+  renderCards();
   renderOnline();
 }
 
+function renderCards() {
+  const v = viewer(), mover = myTurn();
+  const el = document.getElementById("cardsCard");
+  let h = `<div class="label">${esc(tx("cardsTitle"))}</div><div class="stats">`;
+  for (const col of ["w", "b"]) {
+    const won = S.nomadWon[col], d = S.dist[col];
+    const dist = won >= 2 ? tx("allWanderers", d) : tx("nextWanderer", d, G.NOMAD_AT[won], won === 0 ? "I" : "II");
+    h += `<span class="swatch ${col}"></span><div><b>${esc(tx("points", S.points[col]))}</b> · ${esc(tx("oppHand", colName(col), S.hands[col].length))}
+      <div class="muted">${esc(dist)} · ${esc(tx("pointsCap", S.earned[col]))}</div></div>`;
+  }
+  h += `</div><div class="small">${esc(tx("nextDraw", G.DRAW_EVERY - (S.ply % G.DRAW_EVERY)))}</div>`;
+
+  // active effects
+  const fx = S.locks.map(l => tx("lockEffect", toSquare(l.sq), turnsLeft(l.until)));
+  for (const col of ["w", "b"]) {
+    const d = S.disguise[col];
+    if (d) fx.push(col === v ? tx("abraOnYou", turnsLeft(d.until)) : tx("abraOn", colName(col), turnsLeft(d.until)));
+  }
+  if (isPlayer(v)) for (const m of S.mines) if (m.by === v && m.at === S.ply) fx.push(tx("yourMine", toSquare(m.sq)));
+  h += `<div class="label" style="margin-top:12px">${esc(tx("effects"))}</div><div class="effects">${fx.length ? fx.map(x => `<div>${esc(x)}</div>`).join("") : `<div class="small" style="margin:0">${esc(tx("noEffects"))}</div>`}</div>`;
+
+  // the hand of whoever is looking (hot-seat: the player to move)
+  if (isPlayer(v)) {
+    const hand = S.hands[v], canUse = mover && G.canUseCard(S) && !rolling;
+    h += `<div class="label" style="margin-top:12px">${esc(mode === "local" ? tx("handOf", colName(v), hand.length) : tx("yourHand", hand.length))}</div>`;
+    if (S.postCard && mover) h += `<div class="row-btns" style="margin-top:0"><button class="primary" id="endPostBtn">${esc(tx("endTurn"))}</button></div>`;
+    h += `<div class="hand">`;
+    if (!hand.length) h += `<div class="small" style="margin:0">${esc(tx("noCards"))}</div>`;
+    hand.forEach((c, i) => {
+      const active = targeting && targeting.idx === i;
+      h += `<div class="card-item k-${c.t} ${active ? "active" : ""}"><div class="body">
+        <div class="name">${esc(cardName(c.t, c.l))}</div><div class="desc">${esc(L().cardDesc[c.t](c.l))}</div></div>
+        <button data-use="${i}" ${canUse ? "" : "disabled"}>${esc(active ? tx("cancel") : tx("use"))}</button></div>`;
+    });
+    h += `</div>`;
+
+    // shop
+    const canShop = mover && G.canBuy(S) && !rolling;
+    h += `<details class="shop" id="shopBox" ${shopOpen ? "open" : ""}><summary>${esc(tx("shop"))} · ${esc(tx("points", S.points[v]))}</summary>
+      <div class="small">${esc(tx("shopHint"))} ${esc(tx("notForSale"))}</div>`;
+    G.SHOP.forEach(([t, l, price], i) => {
+      h += `<div class="shop-row"><span>${esc(cardName(t, l))}</span>
+        <button data-buy="${i}" ${canShop && S.points[v] >= price ? "" : "disabled"}>${price}</button></div>`;
+    });
+    h += `</details>`;
+  }
+  el.innerHTML = h;
+  const sb = document.getElementById("shopBox");
+  if (sb) sb.ontoggle = () => { shopOpen = sb.open; };
+}
+let shopOpen = false;
+
 function renderOnline() {
   const card = document.getElementById("onlineCard");
+  const langBtn = `<button class="lang-btn" id="langBtn">${esc(tx("lang"))}</button>`;
   if (mode === "local") {
     card.innerHTML = `
-      <div class="label">Play</div>
-      <div class="who">On this device</div>
-      <div class="small">Both players take turns here. Or start an online game and send the link to a friend.</div>
+      <div class="top-row"><div class="label" style="margin:0">${esc(tx("play"))}</div>${langBtn}</div>
+      <div class="who">${esc(tx("onDevice"))}</div>
+      <div class="small">${esc(tx("onDeviceHint"))}</div>
       <label class="small" style="display:flex;gap:8px;align-items:center;cursor:pointer">
-        <input type="checkbox" id="rotateBox" ${rotateLocal ? "checked" : ""}> Turn the board to face whoever is moving
+        <input type="checkbox" id="rotateBox" ${rotateLocal ? "checked" : ""}> ${esc(tx("rotate"))}
       </label>
-      <div class="row-btns"><button class="primary" id="createBtn">Create online game</button></div>`;
+      <div class="row-btns"><button class="primary" id="createBtn">${esc(tx("createOnline"))}</button></div>`;
     document.getElementById("createBtn").onclick = createOnline;
     document.getElementById("rotateBox").onchange = e => {
       rotateLocal = e.target.checked;
       try { localStorage.setItem("rc-rotate", rotateLocal ? "1" : "0"); } catch (err) {}
       render();
     };
-    return;
+  } else {
+    const link = gameCode ? `${location.origin}${location.pathname}#play-${gameCode}` : "";
+    let led = "", status;
+    if (onlineError) status = onlineError;
+    else if (!connected) { led = "wait"; status = tx("connecting"); }
+    else if (!myRole) { led = "wait"; status = tx("joining"); }
+    else if (opponentHere) { led = "on"; status = tx("oppConnected"); }
+    else { led = "wait"; status = tx("waitingOpp"); }
+    const you = isPlayer(myRole) ? tx("youPlay", colName(myRole)) : myRole === "spectator" ? tx("youWatch") : tx("onlineGame");
+    card.innerHTML = `
+      <div class="top-row"><div class="label" style="margin:0">${esc(tx("onlineGame"))}</div>${langBtn}</div>
+      <div class="who">${esc(you)}</div>
+      <div class="status"><span class="led ${led}"></span><span>${esc(status)}</span></div>
+      <div class="online-row">
+        <input id="linkBox" readonly>
+        <button id="copyBtn">${esc(tx("copyLink"))}</button>
+      </div>
+      <div class="small">${esc(myRole === "w" ? tx("sendLink") : tx("watchLink"))}</div>
+      <div class="row-btns"><button id="leaveBtn">${esc(tx("leave"))}</button></div>`;
+    const box = document.getElementById("linkBox");
+    box.value = link;
+    box.onclick = () => box.select();
+    document.getElementById("copyBtn").onclick = e => {
+      const btn = e.currentTarget;
+      navigator.clipboard.writeText(link)
+        .then(() => { btn.textContent = tx("copied"); setTimeout(() => btn.textContent = tx("copyLink"), 1500); })
+        .catch(() => { box.select(); btn.textContent = tx("pressCtrlC"); });
+    };
+    document.getElementById("leaveBtn").onclick = leaveOnline;
   }
-  const link = gameCode ? `${location.origin}${location.pathname}#play-${gameCode}` : "";
-  let led = "", status;
-  if (onlineError) status = onlineError;
-  else if (!connected) { led = "wait"; status = "Connecting to server…"; }
-  else if (!myRole) { led = "wait"; status = "Joining…"; }
-  else if (opponentHere) { led = "on"; status = "Opponent connected"; }
-  else { led = "wait"; status = "Waiting for opponent. Send them the link."; }
-  const you = myRole === "w" ? "You play White" : myRole === "b" ? "You play Black" : myRole === "spectator" ? "You're watching" : "Online game";
-
-  card.innerHTML = `
-    <div class="label">Online game</div>
-    <div class="who" id="youText"></div>
-    <div class="status"><span class="led ${led}"></span><span id="statusText"></span></div>
-    <div class="online-row">
-      <input id="linkBox" readonly>
-      <button id="copyBtn">Copy link</button>
-    </div>
-    <div class="small">${myRole === "w" ? "Send this link to your friend. They'll play Black and see the board from their side." : "Anyone else who opens this link can watch."}</div>
-    <div class="row-btns"><button id="leaveBtn">Leave online game</button></div>`;
-  document.getElementById("youText").textContent = you;
-  document.getElementById("statusText").textContent = status;
-  const box = document.getElementById("linkBox");
-  box.value = link;
-  box.onclick = () => box.select();
-  document.getElementById("copyBtn").onclick = e => {
-    const btn = e.currentTarget;
-    navigator.clipboard.writeText(link)
-      .then(() => { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Copy link", 1500); })
-      .catch(() => { box.select(); btn.textContent = "Press Ctrl+C"; });
+  document.getElementById("langBtn").onclick = () => {
+    lang = lang === "tr" ? "en" : "tr";
+    try { localStorage.setItem("rc-lang", lang); } catch (e) {}
+    applyStatic();
+    render();
   };
-  document.getElementById("leaveBtn").onclick = leaveOnline;
 }
 
 // ---------- setup ----------
 document.getElementById("board").addEventListener("click", e => {
   const sq = e.target.closest(".sq");
   if (sq) clickSquare(+sq.dataset.r, +sq.dataset.c);
+});
+document.getElementById("cardsCard").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.use !== undefined) onUseCard(+b.dataset.use);
+  else if (b.dataset.buy !== undefined) onBuy(+b.dataset.buy);
+  else if (b.id === "endPostBtn") onEndPost();
+});
+document.getElementById("discardList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-discard]");
+  if (b) onDiscard(+b.dataset.discard);
 });
 document.getElementById("newGame").addEventListener("click", () => {
   if (mode === "online" && !restartArmed) {
@@ -936,15 +891,15 @@ document.getElementById("newGame").addEventListener("click", () => {
 });
 document.getElementById("overNew").addEventListener("click", () => { if (mode === "online" && myRole === "spectator") return; restart(); });
 document.getElementById("overClose").addEventListener("click", () => { overDismissed = true; render(); });
-document.getElementById("promoGrid").innerHTML = PROMO_TYPES.map(t =>
-  `<button data-type="${t}"><span class="g">${GLYPH[t]}${VS}</span>${t}</button>`).join("");
 document.getElementById("promoGrid").addEventListener("click", e => {
   const b = e.target.closest("button");
-  if (b) choosePromotion(b.dataset.type);
+  if (b) onPromotion(b.dataset.type);
 });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && targeting) { targeting = null; render(); } });
 window.addEventListener("hashchange", readHash);
 
-S = freshState();
+applyStatic();
+S = G.freshState();
 render();
 readHash();
 </script>

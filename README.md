@@ -1,6 +1,6 @@
 # Random Chess
 
-Chess where every move type is random. Includes online games with invite links.
+Chess where every move type is random, with a card system (Barricade, Abracadabra, Bring Me My Legs, Risen from the Dead, Wanderer), a points shop, and online games with invite links. The page has English and Turkish; the button in the top panel switches between them.
 
 ## Run it
 
@@ -18,7 +18,9 @@ Games are saved to `games.json` next to `server.js`, so they survive a restart. 
 ## Files
 
 - `server.js` serves the page and runs online games over WebSockets at `/ws`.
-- `public/index.html` is the whole game: board, rules and online play.
+- `public/shared.js` holds all game rules, including the cards. Both the page and the server load it, so the server checks states with the same rules.
+- `public/i18n.js` holds all text in English and Turkish.
+- `public/index.html` is the board, panels and online play.
 
 ## Put it on your domain
 

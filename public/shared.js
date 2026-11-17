@@ -130,7 +130,10 @@ function inCheck(b, col, blk) {
 function legalMoves(s, p, t) {
   const blk = lockSet(s);
   if (blk.has(key(...s.board[p]))) return [];          // frozen
-  return movesForType(squares(s.board), blk, p, s.board[p], t).filter(m => {
+  const occ = squares(s.board);
+  return movesForType(occ, blk, p, s.board[p], t).filter(m => {
+    const there = occ[key(...m)];
+    if (there && isKing(there)) return false;            // no piece may capture a king
     const test = { ...s.board };
     applyMove(test, p, m);
     return !inCheck(test, p[0], blk);
@@ -345,8 +348,16 @@ function resolveRoll(s, p, roll) {
   s.deadRolls[p] = roll;
   const own = Object.keys(s.board).filter(q => q[0] === s.turn);
   if (own.every(q => s.deadRolls[q] || isFrozen(s, q))) {
-    addLog(s, "skip", [s.turn]);
     s.lastRoll = null;
+    // Kings can't be captured, so failing every roll while in check is checkmate.
+    if (inCheck(s.board, s.turn, lockSet(s))) {
+      s.checked = true;
+      s.over = { k: "mate", w: other(s.turn) };
+      addLog(s, "skip", [s.turn]);
+      addLog(s, "over", ["mate", other(s.turn)]);
+      return "mate";
+    }
+    addLog(s, "skip", [s.turn]);
     advance(s);
     return "skipped";
   }
@@ -458,7 +469,7 @@ function valid(s) {
       const ko = s.kingOptions && s.kingOptions[col];
       if (!Array.isArray(ko) || ko.length > 6 || !ko.every(isType) || !ko.includes("king")) return false;
       const cap = s.captured && s.captured[col];
-      if (!Array.isArray(cap) || cap.length > 64 || !cap.every(isPiece)) return false;
+      if (!Array.isArray(cap) || cap.length > 600 || !cap.every(isPiece)) return false;
       const rl = s.rollLists && s.rollLists[col];
       if (!Array.isArray(rl) || rl.length > 40 || !rl.every(isType) || !TYPES.every(t => rl.includes(t))) return false;
       const hand = s.hands && s.hands[col];
@@ -471,7 +482,7 @@ function valid(s) {
     }
     if (!s.deadRolls || typeof s.deadRolls !== "object") return false;
     for (const p in s.deadRolls) if (!isPiece(p) || !isType(s.deadRolls[p])) return false;
-    if (!Array.isArray(s.promoted) || s.promoted.length > 64 || !s.promoted.every(isPiece)) return false;
+    if (!Array.isArray(s.promoted) || s.promoted.length > 600 || !s.promoted.every(isPiece)) return false;
     if (s.pendingPromo !== null && (!s.pendingPromo || !isPiece(s.pendingPromo.piece))) return false;
     if (s.locked !== null) {
       const l = s.locked;

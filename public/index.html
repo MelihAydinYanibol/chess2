@@ -37,7 +37,17 @@
     flex-wrap: wrap;
     justify-content: center;
     align-items: flex-start;
-    max-width: 1000px;
+    max-width: 1440px;
+  }
+  .board-col {
+    --size: min(88vw, 560px);
+    --cw: clamp(58px, calc((var(--size) - 36px) / 7), 80px);
+    display: flex; flex-direction: column; gap: 10px; align-items: stretch;
+  }
+  .shop-panel { width: 250px; }
+  @media (max-width: 1220px) {
+    .shop-panel { order: 3; width: min(88vw, 340px); }
+    .panel { order: 2; }
   }
   .board-wrap {
     display: grid;
@@ -53,7 +63,6 @@
   .ranks { grid-template-rows: repeat(8, 1fr); align-items: center; }
   .files { grid-column: 2; grid-template-columns: repeat(8, 1fr); text-align: center; padding-top: 4px; }
   .board {
-    --size: min(88vw, 560px);
     width: var(--size);
     height: var(--size);
     display: grid;
@@ -228,6 +237,76 @@
   button.primary:hover { background: #4fd27b; }
   .who { font-size: 15px; font-weight: 600; }
   .sub { font-size: 13px; color: var(--muted); margin-top: 2px; text-transform: none; }
+
+  /* ---------- playing cards ---------- */
+  .hand-zone { margin-left: 20px; width: var(--size); }
+  .hand-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 0 6px 2px; }
+  .hand-label .swatch { width: 12px; height: 12px; border-width: 1px; }
+  .hand-row { display: flex; gap: 6px; justify-content: center; min-height: calc(var(--cw) * 1.4 + 8px); padding: 4px 2px; overflow-x: auto; }
+  .hand-row.opp { min-height: calc(var(--cw) * 1.1 + 8px); }
+  .hand-empty { align-self: center; font-size: 12px; color: #5c6170; }
+  .gcard {
+    --c1: #555; --c2: #222; --ink: #fff;
+    flex: 0 0 auto;
+    width: var(--cw); height: calc(var(--cw) * 1.4);
+    border-radius: 9px; position: relative; overflow: hidden;
+    background: radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.28), transparent 60%), linear-gradient(165deg, var(--c1), var(--c2));
+    box-shadow: 0 6px 14px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.28);
+    color: var(--ink);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 7px 5px 6px;
+    cursor: pointer; user-select: none;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+  }
+  .gcard::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(255,255,255,.35); border-radius: 7px; pointer-events: none; }
+  .gcard::after { /* shine */
+    content: ""; position: absolute; top: -40%; left: -60%; width: 60%; height: 180%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.18), transparent); transform: rotate(18deg); pointer-events: none;
+  }
+  .gcard:hover { transform: translateY(-5px); }
+  .gcard.sel { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(0,0,0,.55); }
+  .gcard.off { opacity: .55; }
+  .gcard .cname { font-size: calc(var(--cw) * .105); overflow-wrap: anywhere; max-width: 100%; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; text-align: center; line-height: 1.08; min-height: 2.2em; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 2px rgba(0,0,0,.45); z-index: 1; }
+  .gcard .art { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 1; }
+  .gcard .art .disc { width: 74%; aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), rgba(0,0,0,.25) 70%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.35); }
+  .gcard .art svg { width: 70%; height: 70%; filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
+  .gcard .foot { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: calc(var(--cw) * .11); font-weight: 700; z-index: 1; padding: 0 2px; }
+  .gcard .lv { background: rgba(0,0,0,.35); border-radius: 999px; padding: 1px 6px; letter-spacing: .05em; }
+  .gcard .tag { opacity: .9; }
+  .k-barricade.gcard { --c1: #4d93ee; --c2: #142f5c; }
+  .k-abra.gcard { --c1: #b072f2; --c2: #35145f; }
+  .k-mine.gcard { --c1: #f2694f; --c2: #5e140e; }
+  .k-reborn.gcard { --c1: #45d98a; --c2: #0c4a2c; }
+  .k-nomad.gcard { --c1: #f6d36b; --c2: #7a4a0a; --ink: #2a1a02; }
+  .k-nomad.gcard .cname { text-shadow: 0 1px 1px rgba(255,255,255,.4); }
+  .gcard.back {
+    width: calc(var(--cw) * .78); height: calc(var(--cw) * 1.1); cursor: default; padding: 0;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(242,201,76,.25) 0 22%, transparent 23%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 6px, transparent 6px 12px),
+      repeating-linear-gradient(-45deg, rgba(255,255,255,.06) 0 6px, transparent 6px 12px),
+      linear-gradient(160deg, #3a3150, #17141f);
+    box-shadow: 0 4px 10px rgba(0,0,0,.45), inset 0 0 0 2px rgba(242,201,76,.55);
+    justify-content: center;
+  }
+  .gcard.back:hover { transform: none; }
+  .gcard.back .emblem { font-size: calc(var(--cw) * .42); color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,.6); z-index: 1; }
+  .card-info { margin-left: 20px; width: var(--size); background: var(--panel); border-radius: 10px; padding: 10px 14px; display: flex; gap: 12px; align-items: center; min-height: 48px; }
+  .card-info .txt { flex: 1; font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .card-info .txt b { color: var(--text); display: block; font-size: 14px; }
+  .card-info .btns { display: flex; gap: 6px; flex-shrink: 0; }
+  .card-info button { padding: 8px 12px; font-size: 13px; }
+  .shop-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .shop-item { display: flex; align-items: center; gap: 10px; background: var(--panel-2); border-radius: 9px; padding: 6px 8px; --cw: 40px; }
+  .shop-item .gcard { cursor: default; padding: 3px 2px; }
+  .shop-item .gcard:hover { transform: none; }
+  .shop-item .gcard .cname, .shop-item .gcard .foot { display: none; }
+  .shop-item .gcard .art .disc { width: 86%; }
+  .shop-item .nm { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .shop-item button { padding: 6px 9px; font-size: 12px; white-space: nowrap; }
+  .shop-points { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .discard-list .gcard { --cw: 76px; }
+  .discard-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .lang-btn { padding: 6px 12px; font-size: 13px; }
   .sq.locked::after {
@@ -268,10 +347,23 @@
 </head>
 <body>
 <div class="app">
-  <div class="board-wrap">
-    <div class="ranks" id="ranks"></div>
-    <div class="board" id="board"></div>
-    <div class="files" id="files"></div>
+  <div class="card shop-panel" id="shopPanel"></div>
+
+  <div class="board-col">
+    <div class="hand-zone">
+      <div class="hand-label" id="oppLabel"></div>
+      <div class="hand-row opp" id="oppHand"></div>
+    </div>
+    <div class="board-wrap">
+      <div class="ranks" id="ranks"></div>
+      <div class="board" id="board"></div>
+      <div class="files" id="files"></div>
+    </div>
+    <div class="hand-zone">
+      <div class="hand-row" id="myHand"></div>
+      <div class="hand-label" id="myLabel"></div>
+    </div>
+    <div class="card-info" id="cardInfo"></div>
   </div>
 
   <div class="panel">
@@ -437,7 +529,6 @@ function clickSquare(r, c) {
 
 function onUseCard(idx) {
   if (!myTurn() || rolling) return;
-  if (targeting && targeting.idx === idx) { targeting = null; return render(); }
   if (!G.canUseCard(S)) { flashMsg(tx("msgNoCardNow"), true); return; }
   const card = S.hands[S.turn][idx];
   if (!card) return;
@@ -480,6 +571,7 @@ function restart() {
 // ---------- syncing (WebSocket to your server) ----------
 function commit() {
   S.seq++;
+  selCard = null;
   flash = null;
   if (targeting && !G.canUseCard(S)) targeting = null;
   publish(false);
@@ -743,9 +835,7 @@ function render() {
   const mustDiscard = mover && S.hands[S.turn].length > G.HAND_MAX;
   document.getElementById("discard").classList.toggle("show", mustDiscard);
   if (mustDiscard) {
-    document.getElementById("discardList").innerHTML = S.hands[S.turn].map((c, i) =>
-      `<div class="card-item k-${c.t}"><div class="body"><div class="name">${esc(cardName(c.t, c.l))}</div></div>
-       <button data-discard="${i}">✕</button></div>`).join("");
+    document.getElementById("discardList").innerHTML = S.hands[S.turn].map((c, i) => cardFace(c, "", `data-discard="${i}"`)).join("");
   }
   document.getElementById("promo").classList.toggle("show", !!(S.pendingPromo && mover && !mustDiscard));
 
@@ -754,6 +844,8 @@ function render() {
   ng.style.display = mode === "online" && myRole === "spectator" ? "none" : "";
 
   renderCards();
+  renderHands();
+  renderShop();
   renderOnline();
 }
 
@@ -778,36 +870,78 @@ function renderCards() {
   if (isPlayer(v)) for (const m of S.mines) if (m.by === v && m.at === S.ply) fx.push(tx("yourMine", toSquare(m.sq)));
   h += `<div class="label" style="margin-top:12px">${esc(tx("effects"))}</div><div class="effects">${fx.length ? fx.map(x => `<div>${esc(x)}</div>`).join("") : `<div class="small" style="margin:0">${esc(tx("noEffects"))}</div>`}</div>`;
 
-  // the hand of whoever is looking (hot-seat: the player to move)
-  if (isPlayer(v)) {
-    const hand = S.hands[v], canUse = mover && G.canUseCard(S) && !rolling;
-    h += `<div class="label" style="margin-top:12px">${esc(mode === "local" ? tx("handOf", colName(v), hand.length) : tx("yourHand", hand.length))}</div>`;
-    if (S.postCard && mover) h += `<div class="row-btns" style="margin-top:0"><button class="primary" id="endPostBtn">${esc(tx("endTurn"))}</button></div>`;
-    h += `<div class="hand">`;
-    if (!hand.length) h += `<div class="small" style="margin:0">${esc(tx("noCards"))}</div>`;
-    hand.forEach((c, i) => {
-      const active = targeting && targeting.idx === i;
-      h += `<div class="card-item k-${c.t} ${active ? "active" : ""}"><div class="body">
-        <div class="name">${esc(cardName(c.t, c.l))}</div><div class="desc">${esc(L().cardDesc[c.t](c.l))}</div></div>
-        <button data-use="${i}" ${canUse ? "" : "disabled"}>${esc(active ? tx("cancel") : tx("use"))}</button></div>`;
-    });
-    h += `</div>`;
-
-    // shop
-    const canShop = mover && G.canBuy(S) && !rolling;
-    h += `<details class="shop" id="shopBox" ${shopOpen ? "open" : ""}><summary>${esc(tx("shop"))} · ${esc(tx("points", S.points[v]))}</summary>
-      <div class="small">${esc(tx("shopHint"))} ${esc(tx("notForSale"))}</div>`;
-    G.SHOP.forEach(([t, l, price], i) => {
-      h += `<div class="shop-row"><span>${esc(cardName(t, l))}</span>
-        <button data-buy="${i}" ${canShop && S.points[v] >= price ? "" : "disabled"}>${price}</button></div>`;
-    });
-    h += `</details>`;
-  }
   el.innerHTML = h;
-  const sb = document.getElementById("shopBox");
-  if (sb) sb.ontoggle = () => { shopOpen = sb.open; };
 }
-let shopOpen = false;
+
+// ---------- cards on screen ----------
+const ART = {
+  barricade: `<rect x="15" y="29" width="34" height="25" rx="5" fill="currentColor"/><path d="M21 29v-8a11 11 0 0 1 22 0v8" fill="none" stroke="currentColor" stroke-width="5.5"/><circle cx="32" cy="39.5" r="4" fill="#0d2347"/><rect x="30.3" y="41" width="3.4" height="7.5" rx="1.5" fill="#0d2347"/>`,
+  abra: `<path d="M13 52L39 26" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M39 26l5-5" stroke="#ffe27a" stroke-width="6" stroke-linecap="round"/><path d="M46 7l2.6 6 6.4.6-4.8 4.3 1.4 6.3-5.6-3.3-5.6 3.3 1.4-6.3-4.8-4.3 6.4-.6z" fill="#ffe27a"/><circle cx="20" cy="18" r="2.6" fill="currentColor"/><circle cx="52" cy="36" r="2.2" fill="currentColor"/><circle cx="28" cy="10" r="1.6" fill="currentColor"/>`,
+  mine: `<g stroke="currentColor" stroke-width="4.5" stroke-linecap="round"><path d="M32 9v9M32 46v9M9 32h9M46 32h9M15.7 15.7l6.4 6.4M41.9 41.9l6.4 6.4M15.7 48.3l6.4-6.4M41.9 22.1l6.4-6.4"/></g><circle cx="32" cy="32" r="14" fill="currentColor"/><circle cx="27" cy="27" r="3.6" fill="#fff" opacity=".75"/>`,
+  reborn: `<path d="M17 55V31a15 15 0 0 1 30 0v24z" fill="currentColor"/><path d="M32 29v15M25.5 35h13" stroke="#0c4a2c" stroke-width="4.2" stroke-linecap="round"/><path d="M10 56h44" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><path d="M50 6l1.8 4.2 4.2 1.8-4.2 1.8L50 18l-1.8-4.2L44 12l4.2-1.8z" fill="#d7ffe6"/>`,
+  nomad: `<circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M32 13v5M32 46v5M13 32h5M46 32h5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M32 18l6 14-6 14-6-14z" fill="currentColor"/><path d="M32 18l6 14H26z" fill="#c0392b"/><circle cx="32" cy="32" r="3" fill="#fff4cf"/>`,
+};
+function cardFace(c, extra = "", attrs = "") {
+  const lv = LEVELED.has(c.t) ? ["I", "II", "III"][c.l - 1] : "★";
+  return `<div class="gcard k-${c.t} ${extra}" ${attrs} title="${esc(cardName(c.t, c.l))}">
+    <div class="cname">${esc(L().cards[c.t])}</div>
+    <div class="art"><div class="disc"><svg viewBox="0 0 64 64">${ART[c.t]}</svg></div></div>
+    <div class="foot"><span class="lv">${lv}</span><span class="tag">${esc(L().cardTag[c.t](c.l))}</span></div>
+  </div>`;
+}
+function cardBack() { return `<div class="gcard back" title="${esc(tx("cardBack"))}"><span class="emblem">♞${VS}</span></div>`; }
+
+let selCard = null;   // index of the card picked in the viewer's hand
+
+// your cards under the board, the other side's cards (face down) above it
+function renderHands() {
+  const v = viewer(), mover = myTurn();
+  const bottom = isPlayer(v) ? v : (mode === "online" ? "w" : S.turn);
+  const top = other(bottom);
+  const showFaces = isPlayer(v);
+  const topHand = S.hands[top], botHand = S.hands[bottom];
+  document.getElementById("oppLabel").innerHTML = `<span class="swatch ${top}"></span>${esc(tx("handLabel", colName(top), topHand.length))}`;
+  document.getElementById("myLabel").innerHTML = `<span class="swatch ${bottom}"></span>${esc(tx("handLabel", colName(bottom), botHand.length))}`;
+  document.getElementById("oppHand").innerHTML = topHand.length ? topHand.map(cardBack).join("") : `<span class="hand-empty">${esc(tx("noCards"))}</span>`;
+  if (selCard !== null && !botHand[selCard]) selCard = null;
+  const usable = mover && G.canUseCard(S) && !rolling;
+  document.getElementById("myHand").innerHTML = !botHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
+    : showFaces ? botHand.map((c, i) => cardFace(c, (selCard === i || (targeting && targeting.idx === i) ? "sel" : "") + (usable ? "" : " off"), `data-card="${i}"`)).join("")
+    : botHand.map(cardBack).join("");
+
+  // info strip: what the picked card does, Use / Cancel, End turn after a capture
+  const info = document.getElementById("cardInfo");
+  let txt = "", btns = "";
+  const picked = showFaces && selCard !== null ? botHand[selCard] : null;
+  if (targeting) {
+    const c = S.hands[S.turn][targeting.idx];
+    txt = `<b>${esc(c ? cardName(c.t, c.l) : "")}</b>${esc(tx("msgTarget", c ? cardName(c.t, c.l) : ""))}`;
+    btns = `<button id="cancelTarget">${esc(tx("cancel"))}</button>`;
+  } else if (picked) {
+    txt = `<b>${esc(cardName(picked.t, picked.l))}</b>${esc(L().cardDesc[picked.t](picked.l))}`;
+    btns = (mover ? `<button class="primary" id="useCard" ${usable ? "" : "disabled"}>${esc(tx("use"))}</button>` : "") + `<button id="closeCard">${esc(tx("close"))}</button>`;
+    if (mover && !usable) txt += `<br><span style="color:var(--red)">${esc(tx("msgNoCardNow"))}</span>`;
+  } else if (showFaces && botHand.length) txt = esc(tx("pickCard"));
+  else txt = esc(tx("noCards"));
+  if (S.postCard && mover) btns += `<button class="primary" id="endPostBtn">${esc(tx("endTurn"))}</button>`;
+  info.innerHTML = `<div class="txt">${txt}</div><div class="btns">${btns}</div>`;
+}
+
+function renderShop() {
+  const v = viewer(), el = document.getElementById("shopPanel");
+  let h = `<div class="label">${esc(tx("shopTitle"))}</div>`;
+  if (!isPlayer(v)) { el.innerHTML = h + `<div class="small">${esc(tx("watchingShop"))}</div>`; return; }
+  const canShop = myTurn() && G.canBuy(S) && !rolling;
+  h += `<div class="shop-points">${esc(tx("shopPoints", S.points[v]))}</div>
+    <div class="small" style="margin-top:2px">${esc(tx("pointsCap", S.earned[v]))}</div>
+    <div class="shop-list">`;
+  G.SHOP.forEach(([t, l, price], i) => {
+    h += `<div class="shop-item">${cardFace({ t, l })}<div class="nm">${esc(cardName(t, l))}</div>
+      <button data-buy="${i}" ${canShop && S.points[v] >= price ? "" : "disabled"}>${esc(tx("buyFor", price))}</button></div>`;
+  });
+  h += `</div><div class="small">${esc(tx("shopHint"))} ${esc(tx("notForSale"))}</div>`;
+  el.innerHTML = h;
+}
 
 function renderOnline() {
   const card = document.getElementById("onlineCard");
@@ -877,8 +1011,28 @@ document.getElementById("cardsCard").addEventListener("click", e => {
   else if (b.dataset.buy !== undefined) onBuy(+b.dataset.buy);
   else if (b.id === "endPostBtn") onEndPost();
 });
+document.getElementById("myHand").addEventListener("click", e => {
+  const c = e.target.closest("[data-card]");
+  if (!c) return;
+  const i = +c.dataset.card;
+  if (targeting) targeting = null;
+  selCard = selCard === i ? null : i;
+  render();
+});
+document.getElementById("cardInfo").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.id === "useCard" && selCard !== null) { const i = selCard; selCard = null; onUseCard(i); }
+  else if (b.id === "closeCard") { selCard = null; render(); }
+  else if (b.id === "cancelTarget") { targeting = null; render(); }
+  else if (b.id === "endPostBtn") onEndPost();
+});
+document.getElementById("shopPanel").addEventListener("click", e => {
+  const b = e.target.closest("button[data-buy]");
+  if (b) onBuy(+b.dataset.buy);
+});
 document.getElementById("discardList").addEventListener("click", e => {
-  const b = e.target.closest("button[data-discard]");
+  const b = e.target.closest("[data-discard]");
   if (b) onDiscard(+b.dataset.discard);
 });
 document.getElementById("newGame").addEventListener("click", () => {

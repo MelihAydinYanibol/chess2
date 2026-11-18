@@ -267,6 +267,8 @@
   .gcard.sel { box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(0,0,0,.55); }
   /* hands held like a fan: each card has its own tilt along an arc */
   .hand-row { align-items: flex-end; overflow: visible; padding: 30px 4px 26px; }
+  /* your cards sit right under the board; a picked or hovered card simply rises over its edge */
+  #myHand { padding-top: 0; margin-top: -8px; position: relative; z-index: 5; }
   .hand-row .gcard {
     transform-origin: 50% 115%;
     transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg));
@@ -275,8 +277,13 @@
   }
   .hand-row .gcard:first-child { margin-left: 0; }
   .hand-row .gcard:hover { transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg)); }
-  .hand-row.opp { padding: 18px 4px 22px; align-items: flex-start; }
-  .hand-row.opp .gcard { transform-origin: 50% -15%; }
+  /* the opponent's cards: small, on one line with their label, right against the board */
+  .opp-zone { display: flex; align-items: center; gap: 10px; margin-bottom: -6px; }
+  .opp-zone .hand-label { margin: 0; flex-shrink: 0; }
+  .hand-row.opp { --cw: 34px; flex: 1; justify-content: flex-end; min-height: 0; padding: 2px 6px 0; align-items: flex-start; }
+  .hand-row.opp .gcard { transform-origin: 50% -15%; margin-left: -9px; box-shadow: 0 2px 5px rgba(0,0,0,.45), inset 0 0 0 1px rgba(242,201,76,.55); }
+  .hand-row.opp .gcard .emblem { font-size: 14px; }
+  .hand-row.opp .hand-empty { font-size: 11px; }
   /* your hand when it isn't your time to choose: smaller and muted */
   #myHand .gcard { filter: saturate(.55) brightness(.8); }
   /* your time to choose: a little bigger and vivid */
@@ -363,6 +370,23 @@
   .shop-item .nm { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; line-height: 1.25; }
   .shop-item button { padding: 6px 9px; font-size: 12px; white-space: nowrap; }
   .shop-points { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .shop-grid { --cw: 62px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 4px; justify-items: center; margin-top: 12px; }
+  .shop-grid .gcard { transition: transform .2s cubic-bezier(.3,.7,.3,1.2), box-shadow .2s, filter .2s; }
+  .shop-grid .gcard:hover { transform: none; }
+  .shop-grid .gcard.off { filter: saturate(.5) brightness(.75); opacity: 1; }
+  .shop-grid.open .gcard.buyable { filter: saturate(1.3) brightness(1.06); }
+  .shop-grid .gcard .cname { letter-spacing: 0; font-size: calc(var(--cw) * .1); overflow-wrap: normal; }
+  .shop-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .price-tag { padding: 1px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .price-tag.ok { background: var(--gold); color: #2a1a02; }
+  .shop-grid .gcard.sel { transform: scale(1.3); z-index: 6; box-shadow: 0 0 0 3px #3fbf6a, 0 0 22px rgba(63,191,106,.8), 0 12px 24px rgba(0,0,0,.55); }
+  .shop-grid .gcard.sel .card-use { display: block; }
+  @media (hover: hover) and (pointer: fine) {
+    .shop-grid .gcard.buyable:hover { transform: scale(1.3); z-index: 6; box-shadow: 0 0 0 3px #3fbf6a, 0 0 22px rgba(63,191,106,.8), 0 12px 24px rgba(0,0,0,.55); }
+    .shop-grid .gcard.buyable:hover .card-use { display: block; }
+  }
+  .shop-info { font-size: 12px; color: var(--muted); line-height: 1.45; margin-top: 14px; min-height: 52px; }
+  .shop-info b { display: block; color: var(--text); font-size: 13px; margin-bottom: 2px; }
   .discard-list .gcard { --cw: 76px; }
   .discard-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   /* ---------- layout additions ---------- */
@@ -524,7 +548,7 @@
   </div>
 
   <div class="board-col">
-    <div class="hand-zone">
+    <div class="hand-zone opp-zone">
       <div class="hand-label" id="oppLabel"></div>
       <div class="hand-row opp" id="oppHand"></div>
     </div>
@@ -845,6 +869,7 @@ function onResign() {
 // Called after every change of S. `quiet`: a fresh or loaded game, so nothing is animated.
 function onNewState(quiet) {
   selCard = null;
+  selShop = null;
   if (!S.over) shareLink = "";
   flash = null;
   if (targeting && !(myTurn() && G.canUseCard(S))) targeting = null;
@@ -1317,7 +1342,7 @@ function cardBack(attrs = "") { return `<div class="gcard back" ${attrs} title="
 function fanStyle(i, n, flip) {
   const spread = Math.min(9, 44 / Math.max(1, n - 1)), off = i - (n - 1) / 2;
   const rot = off * spread, lift = off * off * spread * .32;
-  return `style="--rot:${(flip ? -rot : rot).toFixed(1)}deg;--lift:${(flip ? -lift : lift).toFixed(1)}px"`;
+  return `style="--rot:${(flip ? -rot * .6 : rot).toFixed(1)}deg;--lift:${(flip ? -lift * .25 : lift).toFixed(1)}px"`;
 }
 
 let selCard = null;   // index of the card picked in the viewer's hand
@@ -1366,20 +1391,29 @@ function renderHands() {
   info.innerHTML = `<div class="txt">${txt}</div><div class="btns">${btns}</div>`;
 }
 
+// the shop shows just the cards with their price; hover (or tap on a phone) shows what one does and a Buy button
+let selShop = null;
 function renderShop() {
   const v = viewer(), el = document.getElementById("shopPanel");
   let h = `<div class="label">${esc(tx("shopTitle"))}</div>`;
   if (!isPlayer(v)) { el.innerHTML = h + `<div class="small">${esc(tx("watchingShop"))}</div>`; return; }
-  const canShop = myTurn() && G.canBuy(S) && !rolling;
+  const canShop = myTurn() && G.canBuy(S) && !rolling && v === S.turn;
   h += `<div class="shop-points">${esc(tx("shopPoints", S.points[v]))}</div>
     <div class="small" style="margin-top:2px">${esc(tx("pointsCap", S.earned[v]))}</div>
-    <div class="shop-list">`;
+    <div class="shop-grid ${canShop ? "open" : ""}">`;
   G.SHOP.forEach(([t, l, price], i) => {
-    h += `<div class="shop-item">${cardFace({ t, l })}<div class="nm">${esc(cardName(t, l))}</div>
-      <button data-buy="${i}" ${canShop && S.points[v] >= price ? "" : "disabled"}>${esc(tx("buyFor", price))}</button></div>`;
+    const ok = canShop && S.points[v] >= price;
+    const inner = ok ? `<button class="card-use" data-buy="${i}">${esc(tx("buy"))}</button>` : "";
+    h += `<div class="shop-cell">${cardFace({ t, l }, (ok ? "buyable" : "off") + (selShop === i ? " sel" : ""), `data-shop="${i}"`, inner)}
+      <span class="price-tag ${ok ? "ok" : ""}">${esc(tx("buyFor", price))}</span></div>`;
   });
-  h += `</div><div class="small">${esc(tx("shopHint"))} ${esc(tx("notForSale"))}</div>`;
+  h += `</div><div class="shop-info" id="shopInfo">${shopInfoText(selShop)}</div>`;
   el.innerHTML = h;
+}
+function shopInfoText(i) {
+  if (i === null || !G.SHOP[i]) return esc(tx("shopHint")) + " " + esc(tx("notForSale"));
+  const [t, l, price] = G.SHOP[i];
+  return `<b>${esc(cardName(t, l))} · ${esc(tx("buyFor", price))}</b>${esc(L().cardDesc[t](l))}`;
 }
 
 
@@ -2533,6 +2567,7 @@ on("myHand", "click", e => {
   render();
 });
 on("myHand", "mouseover", e => {
+  if (!(window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches)) return;
   const c = e.target.closest("[data-card]"), txt = document.querySelector("#cardInfo .txt");
   if (!c || !txt || selCard !== null || targeting) return;
   const card = S.hands[viewer()] && S.hands[viewer()][+c.dataset.card];
@@ -2547,7 +2582,23 @@ on("cardInfo", "click", e => {
   else if (b.id === "cancelTarget") { targeting = null; render(); }
   else if (b.id === "endPostBtn") onEndPost();
 });
-on("shopPanel", "click", e => { const b = e.target.closest("button[data-buy]"); if (b) onBuy(+b.dataset.buy); });
+on("shopPanel", "click", e => {
+  const b = e.target.closest("button[data-buy]");
+  if (b) { selShop = null; onBuy(+b.dataset.buy); return; }
+  const c = e.target.closest("[data-shop]");
+  if (!c) return;
+  const i = +c.dataset.shop;
+  selShop = selShop === i ? null : i;   // phones: tap a card to see it and get its Buy button
+  Sound.play("click");
+  renderShop();
+});
+const canHover = window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches;
+on("shopPanel", "mouseover", e => {
+  if (!canHover) return;   // phones fake a hover on every tap
+  const c = e.target.closest("[data-shop]"), info = document.getElementById("shopInfo");
+  if (c && info) info.innerHTML = shopInfoText(+c.dataset.shop);
+});
+on("shopPanel", "mouseleave", () => { const info = document.getElementById("shopInfo"); if (info) info.innerHTML = shopInfoText(selShop); });
 on("discardList", "click", e => { const b = e.target.closest("[data-discard]"); if (b) onDiscard(+b.dataset.discard); });
 on("promoGrid", "click", e => { const b = e.target.closest("button"); if (b) onPromotion(b.dataset.type); });
 on("resignBtn", "click", onResign);

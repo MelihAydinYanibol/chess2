@@ -279,6 +279,19 @@
   .k-reborn.gcard { --c1: #45d98a; --c2: #0c4a2c; }
   .k-nomad.gcard { --c1: #f6d36b; --c2: #7a4a0a; --ink: #2a1a02; }
   .k-nomad.gcard .cname { text-shadow: 0 1px 1px rgba(255,255,255,.4); }
+  .k-second.gcard { --c1: #3fd6c6; --c2: #0b4d47; }
+  .k-double.gcard { --c1: #ffa94d; --c2: #7a3300; }
+  .k-curse.gcard { --c1: #8a3f7a; --c2: #1d0a1b; }
+  .k-shield.gcard { --c1: #b8cde4; --c2: #2a3d58; --ink: #fff; }
+  .k-crown.gcard { --c1: #f0c25a; --c2: #7a1f1f; }
+  .k-scope.gcard { --c1: #6d7cff; --c2: #1a1d5a; }
+  .k-counter.gcard { --c1: #ff5577; --c2: #520016; }
+  .k-thief.gcard { --c1: #5f7a5c; --c2: #101810; }
+  .k-quake.gcard { --c1: #c48a52; --c2: #3a220e; }
+  .k-teleport.gcard { --c1: #3fd0ff; --c2: #5a1a8a; }
+  .k-swap.gcard { --c1: #a5e86a; --c2: #1d5a28; --ink: #fff; }
+  .k-mycall.gcard { --c1: #ff7cc0; --c2: #5a1238; }
+  .k-rewind.gcard { --c1: #d9a96f; --c2: #45290f; }
   .gcard.back {
     width: calc(var(--cw) * .78); height: calc(var(--cw) * 1.1); cursor: default; padding: 0;
     background:
@@ -358,6 +371,11 @@
   .rb-card { display: inline-block; padding: 1px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; color: #fff; }
   .rb-card.k-barricade { background: #2f6fd0; } .rb-card.k-abra { background: #7b3fc4; } .rb-card.k-mine { background: #c2412f; }
   .rb-card.k-reborn { background: #1f9a5b; } .rb-card.k-nomad { background: #b98a1c; color: #1e1300; }
+  .rb-card.k-second { background: #179488; } .rb-card.k-double { background: #d8741c; } .rb-card.k-curse { background: #6b2d5c; }
+  .rb-card.k-shield { background: #4d6a8f; } .rb-card.k-crown { background: #b8862a; } .rb-card.k-scope { background: #4351c9; }
+  .rb-card.k-counter { background: #c0234a; } .rb-card.k-thief { background: #3f553d; } .rb-card.k-quake { background: #8f5f33; }
+  .rb-card.k-teleport { background: #2a8fc4; } .rb-card.k-swap { background: #3f8f32; } .rb-card.k-mycall { background: #c2457f; }
+  .rb-card.k-rewind { background: #8e6232; }
   .replay-btns { display: flex; gap: 6px; justify-content: space-between; }
   .replay-btns button { flex: 1; padding: 8px 4px; }
   #replaySlider { width: 100%; margin-top: 10px; accent-color: var(--gold); }
@@ -381,6 +399,23 @@
   .fx-card.k-mine { --glow: rgba(242,105,79,.9); }
   .fx-card.k-reborn { --glow: rgba(69,217,138,.9); }
   .fx-card.k-nomad { --glow: rgba(246,211,107,.95); }
+  .fx-card.k-second { --glow: rgba(63,214,198,.9); } .fx-card.k-double { --glow: rgba(255,169,77,.9); } .fx-card.k-curse { --glow: rgba(160,60,140,.95); }
+  .fx-card.k-shield { --glow: rgba(184,205,228,.95); } .fx-card.k-crown { --glow: rgba(240,194,90,.95); } .fx-card.k-scope { --glow: rgba(109,124,255,.9); }
+  .fx-card.k-counter { --glow: rgba(255,85,119,.95); } .fx-card.k-thief { --glow: rgba(120,160,110,.8); } .fx-card.k-quake { --glow: rgba(196,138,82,.9); }
+  .fx-card.k-teleport { --glow: rgba(63,208,255,.95); } .fx-card.k-swap { --glow: rgba(165,232,106,.9); } .fx-card.k-mycall { --glow: rgba(255,124,192,.95); }
+  .fx-card.k-rewind { --glow: rgba(217,169,111,.95); }
+  .sq.shielded::before { content: ""; position: absolute; inset: 6%; border-radius: 50%; z-index: 3; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.35), rgba(120,180,255,.12) 55%, rgba(120,180,255,.3) 70%, transparent 72%);
+    box-shadow: 0 0 10px rgba(140,190,255,.8), inset 0 0 8px rgba(200,225,255,.6); }
+  .mine-mark.seen { opacity: .65; filter: hue-rotate(-20deg); }
+  .board.fx-quake { animation: fxQuake 1s; }
+  @keyframes fxQuake { 0%,100% { transform: none; } 10% { transform: translate(-9px, 4px) rotate(-.6deg); } 20% { transform: translate(8px, -6px) rotate(.5deg); }
+    30% { transform: translate(-7px, -3px); } 40% { transform: translate(9px, 5px) rotate(.6deg); } 50% { transform: translate(-6px, 6px); } 60% { transform: translate(7px, -4px) rotate(-.4deg); }
+    70% { transform: translate(-4px, 3px); } 80% { transform: translate(3px, -2px); } 90% { transform: translate(-2px, 1px); } }
+  .type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+  .type-grid button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; text-transform: capitalize; }
+  .type-grid .g { font-size: 34px; line-height: 1; color: #fbfbfb; text-shadow: 0 0 2px #000; }
+  .type-grid .n { font-size: 11px; color: var(--muted); text-transform: none; }
   .fx-dot { width: 10px; height: 10px; border-radius: 50%; }
   .fx-star { font-size: 18px; line-height: 1; text-shadow: 0 0 6px currentColor; }
   .fx-ring { border-radius: 50%; border: 4px solid currentColor; }
@@ -556,6 +591,20 @@
 <div id="tutorial"><div id="tutRing"></div><div id="tutCard"></div></div>
 <div id="fx"></div>
 
+<div class="overlay" id="choiceModal">
+  <div class="box">
+    <h2 data-t="choiceTitle"></h2>
+    <div class="type-grid" id="choiceGrid"></div>
+  </div>
+</div>
+<div class="overlay modal" id="typeModal">
+  <div class="box">
+    <h2 id="typeTitle"></h2>
+    <p id="typeText"></p>
+    <div class="type-grid" id="typeGrid"></div>
+    <div class="row-btns"><button id="typeCancel" data-t="cancel"></button></div>
+  </div>
+</div>
 <div class="overlay" id="promo">
   <div class="box">
     <h2 data-t="pawnEndTitle"></h2>
@@ -671,10 +720,15 @@ function clickSquare(r, c) {
   if (S.hands[S.turn].length > G.HAND_MAX) { flashMsg(tx("msgDiscard"), true); return; }
   if (targeting) {
     const card = S.hands[S.turn][targeting.idx];
-    if (card && G.validTarget(S, card, [r, c])) { const idx = targeting.idx; targeting = null; doAction({ kind: "card", idx, sq: [r, c] }); }
-    else flashMsg(tx("msgBadTarget"), true);
+    if (!card || !G.validTarget(S, card, [r, c], targeting.picks)) { flashMsg(tx("msgBadTarget"), true); return; }
+    const idx = targeting.idx;
+    if (G.cardTarget(card) === "twoPieces" && !targeting.picks.length) { targeting.picks.push([r, c]); render(); flashMsg(targetHint(card)); return; }
+    const sq2 = targeting.picks.length ? [r, c] : undefined, sq = targeting.picks.length ? targeting.picks[0] : [r, c];
+    targeting = null;
+    doAction({ kind: "card", idx, sq, sq2 });
     return;
   }
+  if (S.choice) { flashMsg(tx("msgChoice"), true); return; }
   if (S.pendingCopy) {
     if (S.pendingCopy.squares.some(q => samePos(q, [r, c]))) doAction({ kind: "copy", sq: [r, c] });
     else flashMsg(tx("msgCopy", typName(S.pendingCopy.type)), true);
@@ -695,13 +749,38 @@ function clickSquare(r, c) {
   doAction({ kind: "roll", sq: [r, c] });
 }
 
+function targetHint(card) {
+  const need = G.cardTarget(card), name = cardName(card.t, card.l);
+  if (need === "piece") return tx("msgPickPiece", name);
+  if (need === "twoPieces") return targeting && targeting.picks.length ? tx("msgPickSecond", name) : tx("msgPickPiece", name);
+  return tx("msgTarget", name);
+}
 function onUseCard(idx) {
   if (!myTurn() || rolling) return;
-  if (!G.canUseCard(S)) { flashMsg(tx("msgNoCardNow"), true); return; }
   const card = S.hands[S.turn][idx];
   if (!card) return;
-  if (G.cardTarget(card)) { targeting = { idx }; render(); flashMsg(tx("msgTarget", cardName(card.t, card.l))); return; }
+  if (!G.canPlay(S, card)) { flashMsg(tx("msgNoCardNow"), true); return; }
+  const need = G.cardTarget(card);
+  if (need === "type") return openTypePicker(idx, card);
+  if (need) { targeting = { idx, picks: [] }; render(); flashMsg(targetHint(card)); return; }
   doAction({ kind: "card", idx });
+}
+// Crown Repair and My Call! ask for a move type
+let typePickFor = null;
+function openTypePicker(idx, card) {
+  typePickFor = idx;
+  const types = card.t === "crown" ? TYPES.filter(t => !S.kingOptions[S.turn].includes(t)) : TYPES;
+  document.getElementById("typeTitle").textContent = cardName(card.t, card.l);
+  document.getElementById("typeText").textContent = card.t === "crown" ? tx("pickTypeCrown") : tx("pickTypeMycall");
+  document.getElementById("typeGrid").innerHTML = types.map(t => `<button data-type="${t}"><span class="g">${GLYPH[t]}${VS}</span>${esc(typName(t))}</button>`).join("");
+  openModal("typeModal");
+}
+function pickType(type) {
+  closeModal("typeModal");
+  if (typePickFor === null) return;
+  const idx = typePickFor;
+  typePickFor = null;
+  doAction({ kind: "card", idx, type });
 }
 function onBuy(i) {
   if (!myTurn() || rolling) return;
@@ -897,7 +976,8 @@ function renderMsg() {
   else if (mode === "online" && !gameStarted) text = invitedName ? tx("invitedWait", invitedName) : tx("msgWaitOpp");
   else if (rolling) text = "…";
   else if (!mover) {
-    if (S.pendingPromo) text = tx("msgPromoOpp", colName(S.turn));
+    if (S.choice) text = tx("msgChoiceOpp", colName(S.turn));
+    else if (S.pendingPromo) text = tx("msgPromoOpp", colName(S.turn));
     else if (S.pendingCopy) text = tx("msgCopyOpp", colName(S.turn));
     else if (S.postCard) text = tx("msgPostOpp", colName(S.turn));
     else {
@@ -906,7 +986,8 @@ function renderMsg() {
     }
   }
   else if (S.hands[S.turn].length > G.HAND_MAX) { text = tx("msgDiscard"); warn = true; }
-  else if (targeting) { const c = S.hands[S.turn][targeting.idx]; text = c ? tx("msgTarget", cardName(c.t, c.l)) : ""; }
+  else if (targeting) { const c = S.hands[S.turn][targeting.idx]; text = c ? targetHint(c) : ""; }
+  else if (S.choice) text = tx("msgChoice");
   else if (S.pendingCopy) text = tx("msgCopy", typName(S.pendingCopy.type));
   else if (S.pendingPromo) text = tx("msgPromo");
   else if (S.postCard) text = tx("msgPost");
@@ -938,6 +1019,9 @@ function logText(e) {
     case "useBarricade": return lg.useBarricade(colName(a[0]), cardName("barricade", a[1]), a[2], a[3] ? colName(a[3]) : "");
     case "useAbra": return lg.useAbra(colName(a[0]), cardName("abra", a[1]));
     case "useNomad": return lg.useNomad(colName(a[0]), cardName("nomad", a[1]));
+    case "countered": return lg.countered(colName(a[0]), cardName(a[1], a[2]), colName(a[3]));
+    case "useThief": return hide ? lg.useThiefHidden(colName(a[0])) : lg.useThief(colName(a[0]), cardName(a[1], a[2]));
+    case "scopeFound": return hide ? "" : lg.scopeFound(colName(a[0]), a[1]);
     case "over": return lg.over(a[0], colName(a[1]));
   }
   return lg[e.k] ? lg[e.k](...a.map(word)) : e.k;
@@ -999,8 +1083,10 @@ function render() {
   const moveSet = new Set((S.locked && !targeting && !rolling ? S.locked.moves : []).map(m => key(...m)));
   const copySet = new Set((S.pendingCopy && mover ? S.pendingCopy.squares : []).map(m => key(...m)));
   const lockMap = new Map(S.locks.map(l => [key(...l.sq), l]));
-  const mineSet = new Set(S.mines.filter(m => mode === "replay" || (m.by === v && m.at === S.ply && isPlayer(v))).map(m => key(...m.sq)));
-  const zoneSet = new Set(mode === "replay" ? S.zones.map(z => key(...z.sq)) : []);
+  const seenBy = x => isPlayer(v) && x.seen && x.seen.includes(v);
+  const mineSet = new Set(S.mines.filter(m => mode === "replay" || (m.by === v && m.at === S.ply && isPlayer(v)) || seenBy(m)).map(m => key(...m.sq)));
+  const zoneSet = new Set(S.zones.filter(z => mode === "replay" || seenBy(z)).map(z => key(...z.sq)));
+  const shieldSet = new Set((S.shields || []).map(x => x.piece));
   const targetCard = targeting ? S.hands[S.turn][targeting.idx] : null;
   const kingPos = S.board[S.turn + "_king"];
   const sel = S.locked ? S.board[S.locked.piece] : null;
@@ -1015,7 +1101,9 @@ function render() {
       if (S.checked && kingPos && kingPos[0] === r && kingPos[1] === c) cls.push("check");
       const lock = lockMap.get(k);
       if (lock) cls.push("locked");
-      if (targetCard && G.validTarget(S, targetCard, [r, c])) cls.push("target");
+      if (targetCard && G.validTarget(S, targetCard, [r, c], targeting.picks)) cls.push("target");
+      if (targeting && targeting.picks.some(q => q[0] === r && q[1] === c)) cls.push("selected");
+      if (p && shieldSet.has(p)) cls.push("shielded");
       let inner = "";
       if (p) inner += boardGlyph(p, (S.deadRolls && S.deadRolls[p] ? "dead" : "") + (lock && !isKing(p) ? " frozen" : ""));
       if (lock) inner += `<span class="lock-n">${turnsLeft(lock.until)}</span>`;
@@ -1073,7 +1161,7 @@ function render() {
   const logEl = document.getElementById("log");
   logEl.textContent = "";
   const lines = dis ? [tx("hiddenAbra")] : S.log.length ? S.log.map(logText) : [tx("noMoves")];
-  for (const line of lines.slice(-60)) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
+  for (const line of lines.filter(Boolean).slice(-60)) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
 
   renderOver();
 
@@ -1084,6 +1172,10 @@ function render() {
     document.getElementById("discardList").innerHTML = S.hands[S.turn].map((c, i) => cardFace(c, "", `data-discard="${i}"`)).join("");
   }
   document.getElementById("promo").classList.toggle("show", !!(S.pendingPromo && mover && !mustDiscard));
+  const showChoice = !!(S.choice && mover && !rolling);
+  document.getElementById("choiceModal").classList.toggle("show", showChoice);
+  if (showChoice) document.getElementById("choiceGrid").innerHTML = S.choice.rolls.map((t, i) =>
+    `<button data-pick="${i}"><span class="g">${GLYPH[t]}${VS}</span>${esc(typName(t))}<span class="n">${esc(tx("choiceMoves", S.choice.moves[i]))}</span></button>`).join("");
 
   document.body.classList.toggle("no-cards", !S.cfg.cards);
   renderCards();
@@ -1136,6 +1228,10 @@ function renderCards() {
     if (d) fx.push(col === v ? tx("abraOnYou", turnsLeft(d.until)) : tx("abraOn", colName(col), turnsLeft(d.until)));
   }
   if (isPlayer(v)) for (const m of S.mines) if (m.by === v && m.at === S.ply) fx.push(tx("yourMine", toSquare(m.sq)));
+  for (const x of S.shields || []) if (S.board[x.piece]) fx.push(tx("shieldOn", `${pieceName(x.piece)} ${toSquare(S.board[x.piece])}`, turnsLeft(x.until)));
+  for (const cu of S.curses || []) fx.push(tx("curseOn", colName(cu.col), turnsLeft(cu.until)));
+  if (S.forced) fx.push(tx("forcedOn", colName(S.forced.col), typName(S.forced.type)));
+  if (isPlayer(v)) { const n = S.mines.filter(m => m.seen && m.seen.includes(v)).length + S.zones.filter(z => z.seen && z.seen.includes(v)).length; if (n) fx.push(tx("seenMines", n)); }
   h += `<div class="label" style="margin-top:12px">${esc(tx("effects"))}</div><div class="effects">${fx.length ? fx.map(x => `<div>${esc(x)}</div>`).join("") : `<div class="small" style="margin:0">${esc(tx("noEffects"))}</div>`}</div>`;
   el.innerHTML = h;
 }
@@ -1148,8 +1244,23 @@ const ART = {
   reborn: `<path d="M17 55V31a15 15 0 0 1 30 0v24z" fill="currentColor"/><path d="M32 29v15M25.5 35h13" stroke="#0c4a2c" stroke-width="4.2" stroke-linecap="round"/><path d="M10 56h44" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><path d="M50 6l1.8 4.2 4.2 1.8-4.2 1.8L50 18l-1.8-4.2L44 12l4.2-1.8z" fill="#d7ffe6"/>`,
   nomad: `<circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M32 13v5M32 46v5M13 32h5M46 32h5" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M32 18l6 14-6 14-6-14z" fill="currentColor"/><path d="M32 18l6 14H26z" fill="#c0392b"/><circle cx="32" cy="32" r="3" fill="#fff4cf"/>`,
 };
+Object.assign(ART, {
+  second: `<path d="M32 12a20 20 0 1 1-17.3 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M8 14l7 9 9-6" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="22" y="22" width="20" height="20" rx="4" fill="currentColor"/><circle cx="28" cy="28" r="2.2" fill="#0b4d47"/><circle cx="36" cy="36" r="2.2" fill="#0b4d47"/>`,
+  double: `<rect x="8" y="16" width="26" height="26" rx="5" fill="currentColor" transform="rotate(-12 21 29)"/><rect x="30" y="24" width="26" height="26" rx="5" fill="#fff3e0" transform="rotate(10 43 37)"/><g fill="#7a3300"><circle cx="15" cy="24" r="2.6"/><circle cx="27" cy="33" r="2.6"/><circle cx="21" cy="29" r="2.6"/><circle cx="37" cy="31" r="2.6"/><circle cx="49" cy="43" r="2.6"/><circle cx="37" cy="43" r="2.6"/><circle cx="49" cy="31" r="2.6"/></g>`,
+  curse: `<rect x="14" y="20" width="36" height="36" rx="7" fill="currentColor"/><path d="M24 33a3 3 0 1 0 0 .1M40 33a3 3 0 1 0 0 .1" stroke="#1d0a1b" stroke-width="5" stroke-linecap="round"/><path d="M26 46l3-3 3 3 3-3 3 3" fill="none" stroke="#1d0a1b" stroke-width="2.6" stroke-linejoin="round"/><path d="M22 20c-2-6 2-10 5-12-1 5 3 6 5 2 2 4 6 3 5-2 3 2 7 6 5 12" fill="#c77dff" opacity=".9"/>`,
+  shield: `<path d="M32 6l22 8v16c0 14-9 23-22 28C19 53 10 44 10 30V14z" fill="currentColor"/><path d="M32 13l15 5.5v11.5c0 10-6 16.5-15 20.5V13z" fill="#2a3d58" opacity=".45"/><path d="M24 32l6 6 11-12" fill="none" stroke="#2a3d58" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+  crown: `<path d="M10 46l-2-26 13 11 11-19 11 19 13-11-2 26z" fill="currentColor"/><rect x="10" y="47" width="44" height="7" rx="3" fill="currentColor"/><circle cx="32" cy="38" r="4" fill="#c0392b"/><circle cx="19" cy="40" r="2.6" fill="#3fbf6a"/><circle cx="45" cy="40" r="2.6" fill="#4d93ee"/><path d="M48 8l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#fff6d0"/>`,
+  scope: `<circle cx="20" cy="40" r="12" fill="currentColor"/><circle cx="44" cy="40" r="12" fill="currentColor"/><rect x="26" y="30" width="12" height="9" rx="3" fill="currentColor"/><rect x="13" y="16" width="14" height="18" rx="4" fill="currentColor"/><rect x="37" y="16" width="14" height="18" rx="4" fill="currentColor"/><circle cx="20" cy="40" r="6.5" fill="#1a1d5a"/><circle cx="44" cy="40" r="6.5" fill="#1a1d5a"/><circle cx="18" cy="38" r="2" fill="#c7cdff"/><circle cx="42" cy="38" r="2" fill="#c7cdff"/>`,
+  counter: `<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="6"/><path d="M16.5 16.5l31 31" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M32 18l2.4 5.6 6 .5-4.6 4 1.4 5.9L32 31l-5.2 3 1.4-5.9-4.6-4 6-.5z" fill="#ffd1dc"/>`,
+  thief: `<path d="M8 28c6-7 15-10 24-10s18 3 24 10c-4 8-13 12-24 12S12 36 8 28z" fill="currentColor"/><ellipse cx="22" cy="28" rx="5" ry="3.4" fill="#101810"/><ellipse cx="42" cy="28" rx="5" ry="3.4" fill="#101810"/><rect x="36" y="42" width="14" height="18" rx="2.5" fill="#e8f0e0" transform="rotate(14 43 51)"/><path d="M20 58c2-8 8-12 16-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>`,
+  quake: `<path d="M6 40h52" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M32 40l-6 7 8 4-5 8" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M14 34l5-12 6 8 7-16 7 14 6-8 5 14" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="50" r="2.5" fill="currentColor"/><circle cx="50" cy="52" r="3" fill="currentColor"/>`,
+  teleport: `<ellipse cx="32" cy="46" rx="22" ry="8" fill="none" stroke="currentColor" stroke-width="4"/><ellipse cx="32" cy="46" rx="12" ry="4" fill="currentColor" opacity=".6"/><path d="M32 40V12M22 22l10-10 10 10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="24" r="2.2" fill="#e6fbff"/><circle cx="48" cy="30" r="2.2" fill="#e6fbff"/>`,
+  swap: `<path d="M12 22h34l-8-8M52 42H18l8 8" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="42" r="5" fill="currentColor"/><circle cx="48" cy="22" r="5" fill="currentColor"/>`,
+  mycall: `<rect x="22" y="10" width="26" height="14" rx="4" fill="currentColor" transform="rotate(-30 35 17)"/><path d="M30 26L14 50" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><rect x="34" y="48" width="24" height="7" rx="3" fill="currentColor"/><path d="M46 40l2-6M54 44l5-3M40 42l-2-6" stroke="#ffd1ea" stroke-width="3" stroke-linecap="round"/>`,
+  rewind: `<circle cx="32" cy="34" r="22" fill="none" stroke="currentColor" stroke-width="5"/><path d="M32 20v14l-9 6" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 18l4 10 10-3" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="34" r="3" fill="#fff0d8"/>`,
+});
 function cardFace(c, extra = "", attrs = "") {
-  const lv = LEVELED.has(c.t) ? ["I", "II", "III"][c.l - 1] : "★";
+  const lv = LEVELED.has(c.t) ? ["I", "II", "III", "IV"][c.l - 1] : "★";
   return `<div class="gcard k-${c.t} ${extra}" ${attrs} title="${esc(cardName(c.t, c.l))}">
     <div class="cname">${esc(L().cards[c.t])}</div>
     <div class="art"><div class="disc"><svg viewBox="0 0 64 64">${ART[c.t]}</svg></div></div>
@@ -1173,18 +1284,19 @@ function renderHands() {
   document.getElementById("oppHand").innerHTML = !topHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
     : topHand.map(c => mode === "replay" && c ? cardFace(c, "off") : cardBack()).join("");
   if (selCard !== null && !botHand[selCard]) selCard = null;
-  const usable = mover && G.canUseCard(S) && !rolling;
+  const playable = c => mover && !rolling && bottom === S.turn && G.canPlay(S, c);
   document.getElementById("myHand").innerHTML = !botHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
-    : showFaces ? botHand.map((c, i) => cardFace(c, (selCard === i || (targeting && targeting.idx === i) ? "sel" : "") + (usable ? "" : " off"), `data-card="${i}"`)).join("")
+    : showFaces ? botHand.map((c, i) => cardFace(c, (selCard === i || (targeting && targeting.idx === i) ? "sel" : "") + (c && playable(c) ? "" : " off"), `data-card="${i}"`)).join("")
     : botHand.map(() => cardBack()).join("");
 
   // info strip: what the picked card does, Use / Cancel, End turn after a capture
   const info = document.getElementById("cardInfo");
   let txt = "", btns = "";
   const picked = showFaces && selCard !== null ? botHand[selCard] : null;
+  const usable = picked && playable(picked);
   if (targeting) {
     const c = S.hands[S.turn][targeting.idx];
-    txt = `<b>${esc(c ? cardName(c.t, c.l) : "")}</b>${esc(tx("msgTarget", c ? cardName(c.t, c.l) : ""))}`;
+    txt = `<b>${esc(c ? cardName(c.t, c.l) : "")}</b>${esc(c ? targetHint(c) : "")}`;
     btns = `<button id="cancelTarget">${esc(tx("cancel"))}</button>`;
   } else if (picked) {
     txt = `<b>${esc(cardName(picked.t, picked.l))}</b>${esc(L().cardDesc[picked.t](picked.l))}`;
@@ -1602,6 +1714,69 @@ async function fxGot(col, card, why) {
       { transform: T(x, y + 160, "scale(.8)"), opacity: 0, filter: "brightness(2.5) blur(6px)" },
       { transform: T(x, y, "scale(1)"), opacity: 1, filter: "brightness(1) blur(0)" },
     ],
+    second: [ // flips over twice
+      { transform: T(x, y, "scale(.6) rotateY(-720deg)"), opacity: 0 },
+      { transform: T(x, y, "scale(1) rotateY(0)"), opacity: 1 },
+    ],
+    double: [ // bounces in twice like a thrown die
+      { transform: T(x - 200, y - 120, "scale(.7) rotate(-90deg)"), opacity: 0 },
+      { transform: T(x - 60, y, "scale(1) rotate(-20deg)"), opacity: 1, offset: .45 },
+      { transform: T(x - 20, y - 40, "scale(1) rotate(-5deg)"), offset: .7 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+    curse: [ // seeps up out of darkness
+      { transform: T(x, y + 30, "scale(.9)"), opacity: 0, filter: "brightness(0) blur(8px)" },
+      { transform: T(x, y, "scale(1.05)"), opacity: 1, filter: "brightness(.5) blur(2px)", offset: .6 },
+      { transform: T(x, y, "scale(1)"), opacity: 1, filter: "brightness(1) blur(0)" },
+    ],
+    shield: [ // slides up with a shine
+      { transform: T(x, y + 140, "scale(.9)"), opacity: 0, filter: "brightness(2)" },
+      { transform: T(x, y, "scale(1)"), opacity: 1, filter: "brightness(1)" },
+    ],
+    crown: [ // floats down from above
+      { transform: T(x, y - 180, "scale(.8) rotate(-8deg)"), opacity: 0 },
+      { transform: T(x, y, "scale(1.08) rotate(3deg)"), opacity: 1, offset: .8 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+    scope: [ // zooms in from far away
+      { transform: T(x, y, "scale(3)"), opacity: 0, filter: "blur(10px)" },
+      { transform: T(x, y, "scale(1)"), opacity: 1, filter: "blur(0)" },
+    ],
+    counter: [ // glitches into place
+      { transform: T(x - 30, y, "scale(1) skewX(30deg)"), opacity: 0 },
+      { transform: T(x + 20, y, "scale(1) skewX(-20deg)"), opacity: 1, offset: .3 },
+      { transform: T(x - 10, y, "scale(1) skewX(10deg)"), offset: .6 },
+      { transform: T(x, y, "scale(1) skewX(0)"), opacity: 1 },
+    ],
+    thief: [ // sneaks in low from the side
+      { transform: T(x + 220, y + 60, "scale(.8) rotate(10deg)"), opacity: 0 },
+      { transform: T(x + 40, y + 30, "scale(.9) rotate(4deg)"), opacity: .6, offset: .6 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+    quake: [ // drops and shudders
+      { transform: T(x, y - 160, "scale(1)"), opacity: 0 },
+      { transform: T(x, y, "scale(1)"), opacity: 1, offset: .5 },
+      { transform: T(x - 8, y, "rotate(-4deg)"), offset: .6 }, { transform: T(x + 8, y, "rotate(4deg)"), offset: .7 },
+      { transform: T(x - 5, y, "rotate(-2deg)"), offset: .8 }, { transform: T(x, y, "rotate(0)"), opacity: 1 },
+    ],
+    teleport: [ // flickers in
+      { transform: T(x, y, "scale(1)"), opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 0, offset: .35 },
+      { opacity: 1, offset: .5 }, { opacity: .2, offset: .62 }, { transform: T(x, y, "scale(1)"), opacity: 1 },
+    ],
+    swap: [ // swings in from one side, then the other
+      { transform: T(x - 160, y, "scale(.9) rotate(-15deg)"), opacity: 0 },
+      { transform: T(x + 40, y, "scale(1) rotate(8deg)"), opacity: 1, offset: .55 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+    mycall: [ // stamped down
+      { transform: T(x, y, "scale(2.2)"), opacity: 0 },
+      { transform: T(x, y, "scale(.92)"), opacity: 1, offset: .6 },
+      { transform: T(x, y, "scale(1)"), opacity: 1 },
+    ],
+    rewind: [ // spins in backwards
+      { transform: T(x + 160, y, "scale(.6) rotate(540deg)"), opacity: 0 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
     nomad: [ // rolls in sideways like a wheel
       { transform: T(x - 260, y, "scale(.8) rotate(-720deg)"), opacity: 0 },
       { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
@@ -1965,6 +2140,222 @@ function diffFx(a, b, fresh) {
   return out;
 }
 
+// ---------- the newer cards ----------
+// Second Chance: arrows whirl around the piece while it re-rolls
+async function fxSecond(col, sqName) {
+  const p = sqPos(sqName);
+  const n = await cardTo(col, { t: "second", l: 1 }, p.x, p.y - p.h, 420, .7);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(p.x, p.y - p.h * 1.4, "scale(.4) rotate(-360deg)") }], { duration: 400 }).then(remove);
+  const orb = fxNode(`<svg viewBox="0 0 64 64" width="${p.w * 1.5}" height="${p.w * 1.5}"><path d="M32 6a26 26 0 1 1-22.5 13" fill="none" stroke="#5ff0e0" stroke-width="5" stroke-linecap="round"/><path d="M4 12l6 8 9-5" fill="none" stroke="#5ff0e0" stroke-width="5" stroke-linecap="round"/></svg>`, "", p.x, p.y, "filter:drop-shadow(0 0 8px #3fd6c6)");
+  particles(10, p.x, p.y, dot("#8ffff2"), p.w, 700);
+  await play(orb, [{ transform: T(p.x, p.y, "rotate(0) scale(.6)"), opacity: 0 }, { transform: T(p.x, p.y, "rotate(-360deg) scale(1)"), opacity: 1, offset: .5 }, { transform: T(p.x, p.y, "rotate(-720deg) scale(1.1)"), opacity: 0 }], { duration: 900, easing: "ease-in-out" });
+  remove(orb);
+}
+
+// Double Dice: two dice tumble across the board
+async function fxDouble(col) {
+  const b = boardPos();
+  const n = await cardTo(col, { t: "double", l: 1 }, b.x, b.y, 450, 1);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(b.x, b.y, "scale(1.4)") }], { duration: 300 }).then(remove);
+  const dice = ["⚄", "⚂"].map((g, i) => {
+    const d = fxNode(g, "", 0, 0, `font-size:${b.w * .14}px;color:${i ? "#fff3e0" : "#ffa94d"};text-shadow:0 4px 10px rgba(0,0,0,.6)`);
+    const x0 = b.x - b.w * .45, y0 = b.y + (i ? 40 : -40), x1 = b.x + (i ? 60 : -60), y1 = b.y + (i ? 20 : -20);
+    return play(d, [
+      { transform: T(x0, y0, "rotate(0)"), opacity: 0 },
+      { transform: T((x0 + x1) / 2, y0 - 60, "rotate(360deg)"), opacity: 1, offset: .4 },
+      { transform: T(x1 - 15, y1, "rotate(600deg)"), offset: .7 },
+      { transform: T(x1, y1 - 18, "rotate(680deg)"), offset: .85 },
+      { transform: T(x1, y1, "rotate(720deg)"), opacity: 1 },
+    ], { duration: 1000, delay: i * 120, easing: "ease-out" }).then(x => play(x, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 })).then(remove);
+  });
+  await Promise.all(dice);
+}
+
+// Cursed Dice: a cursed die drops on the opponent's side in purple smoke
+async function fxCurse(col, opp) {
+  const b = boardPos(), target = handPos(opp);
+  const n = await cardTo(col, { t: "curse", l: 1 }, b.x, b.y, 450, 1.05);
+  await play(n, [{ transform: T(b.x, b.y, "scale(1.05)"), filter: "brightness(1)" }, { transform: T(b.x, b.y, "scale(1.2) rotate(8deg)"), filter: "brightness(.4) saturate(2)" }], { duration: 400 });
+  remove(n);
+  boardFlash("rgba(60,0,60,.55)", 900);
+  const die = fxNode(`<svg viewBox="0 0 64 64" width="80" height="80">${ART.curse}</svg>`, "", b.x, b.y, "color:#c77dff;filter:drop-shadow(0 0 12px #8a3f7a)");
+  particles(16, target.x, target.y, () => fxNode("", "fx-smoke", 0, 0, "background:radial-gradient(circle, rgba(140,60,160,.8), rgba(40,0,40,0) 70%);width:44px;height:44px"), 120, 1200);
+  await play(die, [{ transform: T(b.x, b.y, "scale(.4) rotate(0)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1.1) rotate(-15deg)"), opacity: 1, offset: .3 },
+    { transform: T(target.x, target.y, "scale(.6) rotate(200deg)"), opacity: .9, offset: .85 }, { transform: T(target.x, target.y, "scale(.3) rotate(240deg)"), opacity: 0 }], { duration: 1200, easing: "ease-in" });
+  remove(die);
+}
+
+// Shield: a shimmering bubble closes around the piece
+async function fxShield(col, sqName) {
+  const p = sqPos(sqName);
+  const n = await cardTo(col, { t: "shield", l: 1 }, p.x, p.y, 450, .6);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(p.x, p.y, "scale(.2)") }], { duration: 250 }).then(remove);
+  const bub = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 1.1}px;height:${p.w * 1.1}px;color:#cfe3ff;background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.6), rgba(120,180,255,.2) 60%, transparent 72%);box-shadow:0 0 22px #8cbcff`);
+  particles(12, p.x, p.y, star(["✦", "◆"], ["#e3f0ff", "#8cbcff"]), p.w, 800);
+  await play(bub, [{ transform: T(p.x, p.y, "scale(2.2)"), opacity: 0 }, { transform: T(p.x, p.y, "scale(.9)"), opacity: 1, offset: .55 }, { transform: T(p.x, p.y, "scale(1.05)"), opacity: .9, offset: .8 }, { transform: T(p.x, p.y, "scale(1)"), opacity: 0 }], { duration: 1000 });
+  remove(bub);
+}
+async function fxShieldMine(sqName) {
+  const p = sqPos(sqName);
+  await blink(p, "rgba(255,40,40,.75)", 1);
+  const bub = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 1.3}px;height:${p.w * 1.3}px;color:#cfe3ff;box-shadow:0 0 22px #8cbcff`);
+  play(bub, [{ transform: T(p.x, p.y, "scale(.8)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(1.15)"), opacity: 1, offset: .4 }, { transform: T(p.x, p.y, "scale(1.5)"), opacity: 0 }], { duration: 900 }).then(remove);
+  await fxBoom(sqName, false);
+}
+
+// Crown Repair: a golden crown lands on the king and the move type comes back
+async function fxCrown(col, type) {
+  const k = S.board[col + "_king"];
+  const p = k ? sqPos(toSquare(k)) : boardPos();
+  const n = await cardTo(col, { t: "crown", l: 1 }, p.x, p.y - p.h * 1.5, 450, .7);
+  play(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).then(remove);
+  const crown = fxNode(`<svg viewBox="0 0 64 64" width="${p.w * .9}" height="${p.w * .9}">${ART.crown}</svg>`, "", p.x, p.y, "color:#f6d36b;filter:drop-shadow(0 0 10px #f2c94c)");
+  particles(16, p.x, p.y, star(["★", "✦"], ["#f2c94c", "#fff3b0"]), p.w * 1.3, 900);
+  await play(crown, [{ transform: T(p.x, p.y - p.h * 1.6, "scale(.6)"), opacity: 0 }, { transform: T(p.x, p.y - p.h * .45, "scale(1.1)"), opacity: 1, offset: .55 },
+    { transform: T(p.x, p.y - p.h * .5, "scale(1)"), opacity: 1, offset: .8 }, { transform: T(p.x, p.y - p.h * .5, "scale(1.2)"), opacity: 0 }], { duration: 1200, easing: "cubic-bezier(.3,.7,.4,1.3)" });
+  remove(crown);
+  const tag = fxNode(`+ ${esc(typName(type))}`, "fx-banner", p.x, p.y - p.h, "font-size:18px;padding:6px 12px");
+  await play(tag, [{ transform: T(p.x, p.y - p.h * .8, "scale(.5)"), opacity: 0 }, { transform: T(p.x, p.y - p.h * 1.2, "scale(1)"), opacity: 1, offset: .4 }, { transform: T(p.x, p.y - p.h * 1.6, "scale(1)"), opacity: 0 }], { duration: 1100 });
+  remove(tag);
+}
+
+// Binoculars: the view darkens and a lens sweeps to the chosen 3x3 area
+async function fxScope(col, sqName) {
+  const p = sqPos(sqName), b = boardPos();
+  const n = await cardTo(col, { t: "scope", l: 1 }, b.x, b.y, 420, .9);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(b.x, b.y, "scale(2)") }], { duration: 300 }).then(remove);
+  const r = p.w * 1.6;
+  const lens = fxNode("", "fx-ring", b.x, b.y, `width:${r * 2}px;height:${r * 2}px;border:4px solid #c7cdff;box-shadow:0 0 0 9999px rgba(5,8,30,.55), inset 0 0 30px rgba(109,124,255,.6)`);
+  await play(lens, [{ transform: T(b.x - b.w * .3, b.y - b.h * .2, "scale(.8)"), opacity: 0 }, { transform: T(b.x + b.w * .2, b.y, "scale(1)"), opacity: 1, offset: .3 },
+    { transform: T(p.x, p.y, "scale(1)"), opacity: 1, offset: .7 }, { transform: T(p.x, p.y, "scale(1)"), opacity: 1 }], { duration: 1300, easing: "ease-in-out" });
+  await sleep(350);
+  await play(lens, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 });
+  remove(lens);
+}
+
+// Counterspell: the card is caught mid-air and both shatter
+async function fxCountered(byCol, card, userCol) {
+  const b = boardPos();
+  const n = await cardTo(userCol, card, b.x - 30, b.y, 450, 1);
+  const from = handPos(byCol), c = flyCard({ t: "counter", l: 1 }, false);
+  await play(c, [{ transform: T(from.x, from.y, "scale(.8) rotate(-40deg)"), opacity: .5 }, { transform: T(b.x + 10, b.y, "scale(1.1) rotate(0)"), opacity: 1 }], { duration: 380, easing: "cubic-bezier(.5,0,.3,1.4)" });
+  const x = fxNode("✕", "", b.x, b.y, `font-size:${b.w * .3}px;font-weight:900;color:#ff3355;text-shadow:0 0 20px #ff3355`);
+  boardClass("fx-shake", 350);
+  play(x, [{ transform: T(b.x, b.y, "scale(2.5)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1)"), opacity: 1, offset: .3 }, { transform: T(b.x, b.y, "scale(1.1)"), opacity: 0 }], { duration: 900 }).then(remove);
+  particles(22, b.x, b.y, () => fxNode("", "fx-dot", 0, 0, `width:${rnd(6, 14)}px;height:${rnd(10, 20)}px;border-radius:2px;background:${rand(["#ff5577", "#fff", "#b072f2", "#4d93ee"])}`), b.w * .45, 900);
+  await Promise.all([n, c].map(e => play(e, [{ opacity: 1 }, { opacity: 0, filter: "blur(6px)", transform: e.style.transform + " scale(1.4)" }], { duration: 380 })));
+  remove(n); remove(c);
+}
+
+// Card Thief: a masked hand swipes a card from one hand to the other
+async function fxThief(col) {
+  const opp = other(col), from = handPos(opp), to = handPos(col);
+  const n = await cardTo(col, { t: "thief", l: 1 }, boardPos().x, boardPos().y, 400, .9);
+  play(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).then(remove);
+  const stolen = flyCard({ t: "x" }, true);
+  const mask = fxNode("🥷", "", 0, 0, "font-size:34px");
+  const midX = (from.x + to.x) / 2 + 220, midY = (from.y + to.y) / 2;
+  const path = el => play(el, [
+    { transform: T(from.x, from.y, "scale(.8) rotate(0)"), opacity: 0 },
+    { transform: T(from.x + 40, from.y, "scale(.9) rotate(-10deg)"), opacity: 1, offset: .15 },
+    { transform: T(midX, midY, "scale(1) rotate(15deg)"), opacity: 1, offset: .55 },
+    { transform: T(to.x, to.y, "scale(.7) rotate(0)"), opacity: .2 },
+  ], { duration: 1100, easing: "ease-in-out" });
+  await Promise.all([path(stolen), path(mask)]);
+  remove(stolen); remove(mask);
+}
+
+// Earthquake: the board shakes hard and cracks, then the dust settles
+async function fxQuake(col) {
+  const b = boardPos();
+  const n = await cardTo(col, { t: "quake", l: 1 }, b.x, b.y, 420, 1);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(b.x, b.y + 30, "scale(1.1) rotate(8deg)") }], { duration: 300 }).then(remove);
+  boardClass("fx-quake", 1000);
+  const r = document.getElementById("board").getBoundingClientRect();
+  const crack = fxNode(`<svg viewBox="0 0 100 100" width="${r.width}" height="${r.height}" preserveAspectRatio="none"><path d="M2 48 L18 52 L26 40 L40 58 L52 44 L64 60 L78 46 L98 54" fill="none" stroke="#2a1a0c" stroke-width="1.6"/><path d="M40 58 L36 80 L42 98 M64 60 L70 76 M26 40 L22 18 L28 2" fill="none" stroke="#2a1a0c" stroke-width="1.1"/></svg>`, "", b.x, b.y);
+  particles(24, b.x, b.y + b.h * .1, () => fxNode("", "fx-smoke", 0, 0, "background:radial-gradient(circle, rgba(180,140,100,.7), rgba(90,60,30,0) 70%);width:46px;height:46px"), b.w * .55, 1400);
+  await play(crack, [{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .7 }, { opacity: 0 }], { duration: 1400 });
+  remove(crack);
+}
+
+// Teleport: the piece dissolves into a cyan swirl and reappears somewhere else
+async function fxTeleport(col, type, fromSq, toSq) {
+  const a = sqPos(fromSq), z = sqPos(toSq);
+  const n = await cardTo(col, { t: "teleport", l: 1 }, a.x, a.y - a.h, 400, .6);
+  play(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).then(remove);
+  const swirl = (p, out) => {
+    const sw = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 1.4}px;height:${p.w * 1.4}px;border:none;background:conic-gradient(from 0deg, #3fd0ff, #b072f2, #3fd0ff, transparent, #3fd0ff);-webkit-mask:radial-gradient(circle, transparent 35%, #000 38%);mask:radial-gradient(circle, transparent 35%, #000 38%)`);
+    return play(sw, [{ transform: T(p.x, p.y, `scale(${out ? 0 : 1.2}) rotate(0)`), opacity: out ? 0 : 1 }, { transform: T(p.x, p.y, "scale(1) rotate(360deg)"), opacity: 1, offset: .5 }, { transform: T(p.x, p.y, `scale(${out ? 1.2 : 0}) rotate(720deg)`), opacity: 0 }], { duration: 700 }).then(remove);
+  };
+  const ghost = fxNode(pieceGlyph(col, type === "?" ? "pawn" : type, a.w * .78), "", a.x, a.y, "filter:drop-shadow(0 0 10px #3fd0ff)");
+  swirl(a, false);
+  particles(10, a.x, a.y, dot("#9be8ff"), a.w, 600);
+  await play(ghost, [{ transform: T(a.x, a.y, "scale(1) rotate(0)"), opacity: 1 }, { transform: T(a.x, a.y, "scale(0) rotate(540deg)"), opacity: 0 }], { duration: 600, easing: "ease-in" });
+  await swirl(z, true);
+  particles(10, z.x, z.y, dot("#9be8ff"), z.w, 600);
+  await play(ghost, [{ transform: T(z.x, z.y, "scale(0) rotate(-540deg)"), opacity: 0 }, { transform: T(z.x, z.y, "scale(1) rotate(0)"), opacity: 1, offset: .8 }, { transform: T(z.x, z.y, "scale(1)"), opacity: 0 }], { duration: 650 });
+  remove(ghost);
+}
+
+// Hand to Hand: the two pieces arc past each other
+async function fxSwap(col, sqA, sqB) {
+  const a = sqPos(sqA), z = sqPos(sqB), occ = squares(S.board);
+  const n = await cardTo(col, { t: "swap", l: 1 }, (a.x + z.x) / 2, (a.y + z.y) / 2, 420, .8);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: n.style.transform + " scale(1.5)" }], { duration: 300 }).then(remove);
+  const pa = occ[key(8 - +sqB.slice(1), FILES.indexOf(sqB[0]))], pb = occ[key(8 - +sqA.slice(1), FILES.indexOf(sqA[0]))];   // after the swap
+  const lift = 60;
+  const arc = (p, from, to, up) => {
+    const g = fxNode(p ? boardGlyph(p, "") : "", "", from.x, from.y, "filter:drop-shadow(0 0 8px #a5e86a)");
+    return play(g, [{ transform: T(from.x, from.y, "scale(1)") }, { transform: T((from.x + to.x) / 2, (from.y + to.y) / 2 + (up ? -lift : lift), "scale(1.25)"), offset: .5 }, { transform: T(to.x, to.y, "scale(1)"), opacity: 1 }], { duration: 850, easing: "ease-in-out" })
+      .then(x => play(x, [{ opacity: 1 }, { opacity: 0 }], { duration: 200 })).then(remove);
+  };
+  particles(8, a.x, a.y, dot("#c9ff9b"), a.w, 600);
+  particles(8, z.x, z.y, dot("#c9ff9b"), z.w, 600);
+  await Promise.all([arc(pa, a, z, true), arc(pb, z, a, false)]);
+}
+
+// My Call!: a gavel slams down with the chosen roll
+async function fxMycall(col, type) {
+  const b = boardPos();
+  const n = await cardTo(col, { t: "mycall", l: 1 }, b.x, b.y, 420, 1);
+  play(n, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 }).then(remove);
+  const gavel = fxNode(`<svg viewBox="0 0 64 64" width="120" height="120">${ART.mycall}</svg>`, "", b.x, b.y, "color:#ff7cc0;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))");
+  await play(gavel, [{ transform: T(b.x + 60, b.y - 80, "rotate(-50deg)"), opacity: 0 }, { transform: T(b.x + 30, b.y - 40, "rotate(-60deg)"), opacity: 1, offset: .5 }, { transform: T(b.x, b.y, "rotate(10deg)"), opacity: 1 }], { duration: 500, easing: "ease-in" });
+  boardClass("fx-shake", 300);
+  const ring = fxNode("", "fx-ring", b.x, b.y + 30, "width:80px;height:80px;color:#ff7cc0");
+  play(ring, [{ transform: T(b.x, b.y + 30, "scale(.3)"), opacity: 1 }, { transform: T(b.x, b.y + 30, "scale(3)"), opacity: 0 }], { duration: 600 }).then(remove);
+  const tag = fxNode(`${GLYPH[type] || ""}${VS} ${esc(typName(type))}!`, "fx-banner", b.x, b.y - 70, "color:#ff7cc0;font-size:24px");
+  await play(tag, [{ transform: T(b.x, b.y - 50, "scale(.5)"), opacity: 0 }, { transform: T(b.x, b.y - 80, "scale(1)"), opacity: 1, offset: .3 }, { transform: T(b.x, b.y - 80, "scale(1)"), opacity: 1, offset: .8 }, { transform: T(b.x, b.y - 100, "scale(1)"), opacity: 0 }], { duration: 1200 });
+  remove(tag);
+  await play(gavel, [{ opacity: 1 }, { opacity: 0 }], { duration: 250 });
+  remove(gavel);
+}
+async function fxForced() {
+  const roll = center(document.getElementById("roll"));
+  const f = fxNode("", "fx-ring", roll.x, roll.y, `width:${roll.w}px;height:${roll.h * 2}px;border-radius:12px;color:#ff7cc0;box-shadow:0 0 18px #ff7cc0`);
+  await play(f, [{ opacity: 0 }, { opacity: 1, offset: .3 }, { opacity: 0 }], { duration: 800 });
+  remove(f);
+}
+
+// Wheel of Time: a giant clock spins backwards over the board
+async function fxRewind(col) {
+  const b = boardPos();
+  const n = await cardTo(col, { t: "rewind", l: 1 }, b.x, b.y, 420, 1);
+  play(n, [{ opacity: 1 }, { opacity: 0, transform: T(b.x, b.y, "scale(2)") }], { duration: 300 }).then(remove);
+  boardFlash("rgba(217,169,111,.5)", 1600);
+  const size = b.w * .8;
+  const clock = fxNode(`<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="46" fill="rgba(40,24,8,.55)" stroke="#f0d2a8" stroke-width="3"/>
+    ${Array.from({ length: 12 }, (_, i) => `<line x1="50" y1="8" x2="50" y2="14" stroke="#f0d2a8" stroke-width="2.5" transform="rotate(${i * 30} 50 50)"/>`).join("")}
+    <line class="mh" x1="50" y1="50" x2="50" y2="16" stroke="#fff0d8" stroke-width="3" stroke-linecap="round"/><line class="hh" x1="50" y1="50" x2="50" y2="28" stroke="#fff0d8" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="50" r="4" fill="#fff0d8"/></svg>`, "", b.x, b.y);
+  const mh = clock.querySelector(".mh"), hh = clock.querySelector(".hh");
+  [mh, hh].forEach(h => { h.style.transformOrigin = "50px 50px"; h.style.transformBox = "view-box"; });
+  mh.animate([{ transform: "rotate(0)" }, { transform: "rotate(-1440deg)" }], { duration: 1600, easing: "ease-in-out" });
+  hh.animate([{ transform: "rotate(0)" }, { transform: "rotate(-360deg)" }], { duration: 1600, easing: "ease-in-out" });
+  document.getElementById("board").animate([{ filter: "none" }, { filter: "sepia(.8) brightness(.9)" }, { filter: "none" }], { duration: 1600 });
+  await play(clock, [{ transform: T(b.x, b.y, "scale(.3) rotate(0)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1) rotate(-30deg)"), opacity: 1, offset: .2 }, { transform: T(b.x, b.y, "scale(1) rotate(-60deg)"), opacity: 1, offset: .8 }, { transform: T(b.x, b.y, "scale(1.3) rotate(-90deg)"), opacity: 0 }], { duration: 1700 });
+  remove(clock);
+}
+
 function soundFor(e) {
   const a = e.a, v = viewer();
   switch (e.k) {
@@ -1976,6 +2367,21 @@ function soundFor(e) {
     case "useMine": return ["mine", 400];
     case "useReborn": return ["reborn", 400];
     case "useNomad": return ["nomad", 400];
+    case "useSecond": return ["second", 400];
+    case "useDouble": return ["dice", 450];
+    case "useCurse": return ["curse", 400];
+    case "useShield": return ["shieldUp", 400];
+    case "shieldMine": return ["shield", 300];
+    case "useCrown": return ["crown", 450];
+    case "useScope": return ["scope", 400];
+    case "countered": return ["counter", 820];
+    case "useThief": return ["thief", 400];
+    case "useQuake": return ["quake", 420];
+    case "useTeleport": return ["teleport", 400];
+    case "useSwap": return ["swap", 420];
+    case "useMycall": return ["gavel", 880];
+    case "forcedRoll": return ["gavel", 0];
+    case "useRewind": return ["rewind", 400];
     case "mineKill": return ["boom", 620];
     case "kingMine": return ["shield", 300];
     case "zoneFound": case "zoneLost": case "copyPlaced": return ["portal", 0];
@@ -2003,6 +2409,21 @@ function fxFor(e) {
     case "useMine": return () => fxMine(a[0], a[1]);
     case "useReborn": return () => fxReborn(a[0]);
     case "useNomad": return () => fxNomad(a[0], a[1]);
+    case "useSecond": return () => fxSecond(a[0], a[2]);
+    case "useDouble": return () => fxDouble(a[0]);
+    case "useCurse": return () => fxCurse(a[0], a[1]);
+    case "useShield": return () => fxShield(a[0], a[2]);
+    case "shieldMine": return () => fxShieldMine(a[2]);
+    case "useCrown": return () => fxCrown(a[0], a[1]);
+    case "useScope": return () => fxScope(a[0], a[1]);
+    case "countered": return () => fxCountered(a[0], { t: a[1], l: a[2] }, a[3]);
+    case "useThief": return () => fxThief(a[0]);
+    case "useQuake": return () => fxQuake(a[0]);
+    case "useTeleport": return () => fxTeleport(a[0], a[1], a[2], a[3]);
+    case "useSwap": return () => fxSwap(a[0], a[1], a[2]);
+    case "useMycall": return () => fxMycall(a[0], a[1]);
+    case "forcedRoll": return () => fxForced();
+    case "useRewind": return () => fxRewind(a[0]);
     case "mineKill": return () => fxMineKill(a[0], a[1], a[2]);
     case "kingMine": return () => fxKingMine(a[0], a[1]);
     case "zoneFound": return a[2] ? () => fxZone(a[0], a[1], a[2], true) : null;
@@ -2063,6 +2484,9 @@ on("shopPanel", "click", e => { const b = e.target.closest("button[data-buy]"); 
 on("discardList", "click", e => { const b = e.target.closest("[data-discard]"); if (b) onDiscard(+b.dataset.discard); });
 on("promoGrid", "click", e => { const b = e.target.closest("button"); if (b) onPromotion(b.dataset.type); });
 on("resignBtn", "click", onResign);
+on("choiceGrid", "click", e => { const b = e.target.closest("button[data-pick]"); if (b && myTurn()) doAction({ kind: "pick", i: +b.dataset.pick }); });
+on("typeGrid", "click", e => { const b = e.target.closest("button[data-type]"); if (b) pickType(b.dataset.type); });
+on("typeCancel", "click", () => { typePickFor = null; closeModal("typeModal"); });
 on("overNew", "click", () => { overDismissed = true; playAgain(); });
 on("overClose", "click", () => { overDismissed = true; render(); });
 on("overReplay", "click", e => shareReplay(e.currentTarget));

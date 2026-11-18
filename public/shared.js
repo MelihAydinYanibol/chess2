@@ -15,10 +15,32 @@ const PIECE_RE = /^[wb]_(king|(?:queen|rook|bishop|knight|paw)(?:\d{1,2}|x\d{1,4
 const LOG_MAX = 40;
 
 // ---------- card rules (from the rule book) ----------
-const CARD_KINDS = ["barricade", "abra", "mine", "reborn", "nomad"];
-const MAX_LEVEL = { barricade: 3, abra: 2, mine: 1, reborn: 1, nomad: 2 };
-const DURATION = { barricade: [1, 2, 3], abra: [2, 3] };   // in full turns
-const NOMAD_GIVES = [2, 3];
+// when: "any" (before the move, or after a capturing move), "pre" (before the move only),
+//       "roll" (after rolling, before moving), "never" (works by itself)
+// target: "square", "piece" (your own), "twoPieces" (two of your own), "type" (a move type)
+const CARD_INFO = {
+  barricade: { levels: 3, when: "any", target: "square" },
+  abra:      { levels: 2, when: "any" },
+  mine:      { levels: 1, when: "any", target: "square" },
+  reborn:    { levels: 1, when: "any" },
+  nomad:     { levels: 4, when: "any" },
+  second:    { levels: 1, when: "roll" },
+  double:    { levels: 1, when: "pre" },
+  curse:     { levels: 1, when: "any" },
+  shield:    { levels: 1, when: "any", target: "piece" },
+  crown:     { levels: 1, when: "any", target: "type" },
+  scope:     { levels: 1, when: "any", target: "square" },
+  counter:   { levels: 1, when: "never" },
+  thief:     { levels: 1, when: "any" },
+  quake:     { levels: 1, when: "any" },
+  teleport:  { levels: 1, when: "any", target: "piece" },
+  swap:      { levels: 1, when: "any", target: "twoPieces" },
+  mycall:    { levels: 1, when: "any", target: "type" },
+  rewind:    { levels: 1, when: "pre" },
+};
+const CARD_KINDS = Object.keys(CARD_INFO);
+const DURATION = { barricade: [1, 2, 3], abra: [2, 3], curse: 2, shield: 2 };   // in full turns
+const NOMAD_GIVES = [2, 3, 4, 5];
 const VALUE = { pawn: 1, knight: 3, bishop: 3, rook: 5, queen: 9, king: 0 };
 // Game settings chosen when a game is created
 const DEFAULT_CFG = { cards: true, drawEvery: 3, startPoints: 0, pointCap: 39, turnTime: 0, suddenDeath: 40, clockSec: 60, randomSides: true };
@@ -38,14 +60,17 @@ function normCfg(c) {
   return out;
 }
 const HAND_MAX = 7;
-const NOMAD_AT = [32, 32 + 48];     // squares travelled for Wanderer I and II
+const NOMAD_AT = [32, 80, 144, 224];   // squares travelled for Wanderer I, II, III and IV (+48, +64, +80)
 const SHOP = [                      // [card, level, price]
-  ["reborn", 1, 3], ["barricade", 1, 4], ["mine", 1, 5], ["abra", 1, 6],
-  ["barricade", 2, 7], ["abra", 2, 9], ["barricade", 3, 10],
+  ["second", 1, 2], ["reborn", 1, 3], ["scope", 1, 3], ["teleport", 1, 3], ["barricade", 1, 4], ["double", 1, 4],
+  ["mine", 1, 5], ["shield", 1, 5], ["quake", 1, 5], ["abra", 1, 6], ["curse", 1, 6], ["crown", 1, 6],
+  ["barricade", 2, 7], ["thief", 1, 7], ["counter", 1, 8], ["abra", 2, 9], ["barricade", 3, 10],
 ];
 const DECK = [                      // [card, level, weight %]
-  ["barricade", 1, 18], ["reborn", 1, 16], ["mine", 1, 15], ["abra", 1, 14], ["barricade", 2, 10],
-  ["nomad", 1, 8], ["abra", 2, 6], ["barricade", 3, 5], ["nomad", 2, 4],
+  ["second", 1, 8], ["barricade", 1, 8], ["reborn", 1, 7], ["mine", 1, 7], ["abra", 1, 7], ["scope", 1, 6],
+  ["teleport", 1, 6], ["double", 1, 5], ["shield", 1, 5], ["barricade", 2, 5], ["nomad", 1, 4], ["quake", 1, 4],
+  ["curse", 1, 4], ["crown", 1, 3], ["abra", 2, 3], ["swap", 1, 3], ["mycall", 1, 3], ["thief", 1, 3],
+  ["counter", 1, 3], ["barricade", 3, 2], ["nomad", 2, 2], ["rewind", 1, 2],
 ];
 
 // ---------- helpers ----------
@@ -153,6 +178,7 @@ function legalMoves(s, p, t) {
   return movesForType(occ, blk, p, s.board[p], t).filter(m => {
     const there = occ[key(...m)];
     if (there && isKing(there)) return false;            // no piece may capture a king
+    if (there && s.shields && s.shields.some(x => x.piece === there)) return false;   // or a shielded piece
     const test = { ...s.board };
     applyMove(test, p, m);
     return !inCheck(test, p[0], blk);
@@ -184,21 +210,57 @@ function gainPoints(s, col, n) {
   return add;
 }
 function inPreMove(s) {
-  return s.cfg.cards && !s.over && !s.moved && !s.locked && !s.pendingCopy && !s.pendingPromo &&
+  return s.cfg.cards && !s.over && !s.moved && !s.locked && !s.pendingCopy && !s.pendingPromo && !s.choice &&
     Object.keys(s.deadRolls).length === 0 && s.hands[s.turn].length <= HAND_MAX;
 }
-function canUseCard(s) {
-  if (!s.cfg.cards || s.over || s.pendingCopy || s.pendingPromo || s.hands[s.turn].length > HAND_MAX) return false;
-  return s.moved ? s.postCard : (inPreMove(s) && !s.cardUsed);
+function rolledPiece(s) {
+  // the piece Second Chance would re-roll: the one that just rolled (locked, or failed)
+  if (s.locked) return s.locked.piece;
+  if (s.lastRoll && s.deadRolls[s.lastRoll.piece] && s.board[s.lastRoll.piece]) return s.lastRoll.piece;
+  return null;
 }
+// can this particular card be played right now?
+function canPlay(s, card) {
+  if (!card || !s.cfg.cards || s.over || s.pendingCopy || s.pendingPromo || s.choice || s.hands[s.turn].length > HAND_MAX) return false;
+  const info = CARD_INFO[card.t];
+  if (info.when === "never") return false;
+  if (info.when === "roll") return !s.moved && !s.cardUsed && !!rolledPiece(s);
+  if (s.moved) {
+    if (!s.postCard || info.when === "pre") return false;
+  } else if (!(inPreMove(s) && !s.cardUsed)) return false;
+  if (card.t === "crown") return s.kingOptions[s.turn].length < TYPES.length;
+  if (card.t === "thief") return s.hands[other(s.turn)].length > 0;
+  if (card.t === "rewind") return !!(s.snaps && s.snaps[other(s.turn)]);
+  return true;
+}
+function canUseCard(s) { return s.hands[s.turn].some(c => canPlay(s, c)); }
 function canBuy(s) { return inPreMove(s); }
-function cardTarget(card) { return card.t === "barricade" || card.t === "mine" ? card.t : null; }
-function validTarget(s, card, [r, c]) {
+// what a card needs from the player: a square, a piece, two pieces, or a move type
+function cardTarget(card) { return CARD_INFO[card.t].target || null; }
+function isShielded(s, p) { return s.shields.some(x => x.piece === p); }
+function validTarget(s, card, [r, c], picks = []) {
   if (!onBoard(r, c)) return false;
-  const occ = squares(s.board), k = key(r, c);
-  if (lockSet(s).has(k)) return false;
-  if (card.t === "barricade") return !(occ[k] && isKing(occ[k]));
-  if (card.t === "mine") return !occ[k];   // a square with someone's hidden mine is still allowed, so nothing leaks
+  const occ = squares(s.board), k = key(r, c), p = occ[k], col = s.turn, locked = lockSet(s).has(k);
+  switch (card.t) {
+    case "barricade": return !locked && !(p && isKing(p));
+    case "mine": return !locked && !p;   // a square with someone's hidden mine is still allowed, so nothing leaks
+    case "scope": return true;
+    case "shield": return !!p && p[0] === col && !isKing(p) && !isShielded(s, p);
+    case "teleport": return !!p && p[0] === col && !isKing(p) && !isFrozen(s, p) && teleportSquares(s, p).length > 0;
+    case "swap": {
+      if (!p || p[0] !== col || isKing(p) || isFrozen(s, p)) return false;
+      if (!picks.length) return true;
+      const q = occ[key(...picks[0])];
+      if (!q || q === p) return false;
+      const test = { ...s.board, [p]: s.board[q], [q]: s.board[p] };
+      return !inCheck(test, col, lockSet(s));
+    }
+  }
+  return false;
+}
+function validType(s, card, type) {
+  if (card.t === "crown") return TYPES.includes(type) && !s.kingOptions[s.turn].includes(type);
+  if (card.t === "mycall") return TYPES.includes(type);
   return false;
 }
 function emptySquares(s) {
@@ -206,35 +268,189 @@ function emptySquares(s) {
   for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (!occ[key(r, c)] && !blk.has(key(r, c))) out.push([r, c]);
   return out;
 }
-function useCard(s, idx, target) {
-  const col = s.turn, card = s.hands[col][idx];
-  if (!card || !canUseCard(s)) return false;
-  const need = cardTarget(card);
-  if (need && !(Array.isArray(target) && validTarget(s, card, target))) return false;
-  s.hands[col].splice(idx, 1);
-  const opp = other(col);
-  if (card.t === "barricade") {
-    s.locks.push({ sq: target, until: s.ply + 2 * DURATION.barricade[card.l - 1] });
-    const there = squares(s.board)[key(...target)];
-    addLog(s, "useBarricade", [col, card.l, toSquare(target), there ? there[0] : ""]);
-  } else if (card.t === "abra") {
-    s.disguise[opp] = { type: rand(TYPES), until: s.ply + 2 * DURATION.abra[card.l - 1] };
-    addLog(s, "useAbra", [col, card.l]);
-  } else if (card.t === "mine") {
-    s.mines.push({ sq: target, by: col, at: s.ply });
-    addLog(s, "useMine", [col, toSquare(target)]);   // the square is only animated for the mine's owner
-  } else if (card.t === "reborn") {
-    const free = emptySquares(s).filter(q => !s.zones.some(z => samePos(z.sq, q)));
-    if (free.length) s.zones.push({ sq: rand(free) });
-    addLog(s, "useReborn", [col]);
-  } else if (card.t === "nomad") {
-    addLog(s, "useNomad", [col, card.l]);
-    for (let i = 0; i < NOMAD_GIVES[card.l - 1]; i++) give(s, col, drawDeck(), "nomadCard");
+function teleportSquares(s, p) {
+  return emptySquares(s).filter(q => {
+    const test = { ...s.board, [p]: q };
+    return !inCheck(test, p[0], lockSet(s));
+  });
+}
+
+// A piece arrives on a square by moving, teleporting or swapping: hidden mines, respawn spots, the pawn bonus.
+// Returns false if the piece died.
+function arrive(s, piece, to) {
+  const col = piece[0];
+  const mi = s.mines.findIndex(m => samePos(m.sq, to));
+  if (mi >= 0) {
+    s.mines.splice(mi, 1);
+    if (isKing(piece)) addLog(s, "kingMine", [col, toSquare(to)]);
+    else if (isShielded(s, piece)) addLog(s, "shieldMine", [col, realType(piece), toSquare(to)]);
+    else { delete s.board[piece]; s.shields = s.shields.filter(x => x.piece !== piece); addLog(s, "mineKill", [col, realType(piece), toSquare(to)]); return false; }
   }
-  if (s.moved) s.postCard = false; else s.cardUsed = true;
-  afterStep(s);
+  // hidden respawn zone (kings can't be copied, so a king leaves it in place)
+  const zi = !isKing(piece) && !s.pendingCopy ? s.zones.findIndex(z => samePos(z.sq, to)) : -1;
+  if (zi >= 0) {
+    s.zones.splice(zi, 1);
+    const sqs = copySquares(s, to);
+    if (sqs.length) { s.pendingCopy = { type: realType(piece), squares: sqs }; addLog(s, "zoneFound", [col, realType(piece), toSquare(to)]); }
+    else addLog(s, "zoneLost", [col, toSquare(to)]);
+  }
+  // pawn on the far side: bonus roll type + 70% Bring Me My Legs
+  const lastRow = col === "w" ? 0 : 7;
+  if (realType(piece) === "pawn" && to[0] === lastRow && !s.promoted.includes(piece) && !s.pendingPromo) {
+    s.pendingPromo = { piece };
+    if (chance(0.70)) give(s, col, { t: "mine", l: 1 }, "pawnEnd");
+  }
   return true;
 }
+
+function useCard(s, idx, act = {}) {
+  const col = s.turn, opp = other(col), card = s.hands[col][idx];
+  if (!canPlay(s, card)) return false;
+  const need = cardTarget(card);
+  if (need === "square" || need === "piece") { if (!isSq(act.sq) || !validTarget(s, card, act.sq)) return false; }
+  if (need === "twoPieces") { if (!isSq(act.sq) || !isSq(act.sq2) || !validTarget(s, card, act.sq) || !validTarget(s, card, act.sq2, [act.sq])) return false; }
+  if (need === "type" && !validType(s, card, act.type)) return false;
+  s.hands[col].splice(idx, 1);
+  const done = () => { if (s.moved) s.postCard = false; else s.cardUsed = true; afterStep(s); return true; };
+
+  // Counterspell in the opponent's hand cancels the card (both are used up)
+  const ci = s.hands[opp].findIndex(c => c.t === "counter");
+  if (ci >= 0) {
+    s.hands[opp].splice(ci, 1);
+    addLog(s, "countered", [opp, card.t, card.l, col]);
+    return done();
+  }
+
+  const target = act.sq, occ = squares(s.board);
+  switch (card.t) {
+    case "barricade": {
+      s.locks.push({ sq: target, until: s.ply + 2 * DURATION.barricade[card.l - 1] });
+      const there = occ[key(...target)];
+      addLog(s, "useBarricade", [col, card.l, toSquare(target), there ? there[0] : ""]);
+      break;
+    }
+    case "abra":
+      s.disguise[opp] = { type: rand(TYPES), until: s.ply + 2 * DURATION.abra[card.l - 1] };
+      addLog(s, "useAbra", [col, card.l]);
+      break;
+    case "mine":
+      s.mines.push({ sq: target, by: col, at: s.ply, seen: [] });
+      addLog(s, "useMine", [col, toSquare(target)]);   // the square is only animated for the mine's owner
+      break;
+    case "reborn": {
+      const free = emptySquares(s).filter(q => !s.zones.some(z => samePos(z.sq, q)));
+      if (free.length) s.zones.push({ sq: rand(free), seen: [] });
+      addLog(s, "useReborn", [col]);
+      break;
+    }
+    case "nomad":
+      addLog(s, "useNomad", [col, card.l]);
+      for (let i = 0; i < NOMAD_GIVES[card.l - 1]; i++) give(s, col, drawDeck(), "nomadCard");
+      break;
+    case "second": {
+      // re-roll the piece that just rolled; the new roll counts
+      const p = rolledPiece(s);
+      s.locked = null;
+      delete s.deadRolls[p];
+      const roll = rand(optionsFor(p, s));
+      s.rollN++;
+      addLog(s, "useSecond", [col, roll, toSquare(s.board[p])]);
+      s.cardUsed = true;
+      resolveRoll(s, p, roll);
+      return true;
+    }
+    case "double":
+      s.doubleNext = true;
+      addLog(s, "useDouble", [col]);
+      break;
+    case "curse":
+      s.rollLists[opp].push("king");
+      s.curses.push({ col: opp, until: s.ply + 2 * DURATION.curse });
+      addLog(s, "useCurse", [col, opp]);
+      break;
+    case "shield": {
+      const p = occ[key(...target)];
+      s.shields.push({ piece: p, until: s.ply + 2 * DURATION.shield });
+      addLog(s, "useShield", [col, realType(p), toSquare(target)]);
+      break;
+    }
+    case "crown":
+      s.kingOptions[col] = TYPES.filter(t => t === act.type || s.kingOptions[col].includes(t));
+      addLog(s, "useCrown", [col, act.type]);
+      break;
+    case "scope": {
+      // reveal hidden mines and respawn spots in the 3x3 area, to this player only, for the rest of the game
+      const near = q => Math.abs(q[0] - target[0]) <= 1 && Math.abs(q[1] - target[1]) <= 1;
+      let found = 0;
+      for (const m of s.mines) if (near(m.sq) && !m.seen.includes(col)) { m.seen.push(col); found++; }
+      for (const z of s.zones) if (near(z.sq) && !z.seen.includes(col)) { z.seen.push(col); found++; }
+      addLog(s, "useScope", [col, toSquare(target)]);
+      addLog(s, "scopeFound", [col, found], col);
+      break;
+    }
+    case "thief": {
+      const i = Math.floor(Math.random() * s.hands[opp].length);
+      const [stolen] = s.hands[opp].splice(i, 1);
+      s.hands[col].push(stolen);
+      addLog(s, "useThief", [col, stolen.t, stolen.l], col);
+      break;
+    }
+    case "quake":
+      s.mines = []; s.locks = []; s.zones = [];
+      addLog(s, "useQuake", [col]);
+      break;
+    case "teleport": {
+      const p = occ[key(...target)], from = s.board[p];
+      const to = rand(teleportSquares(s, p));
+      s.board[p] = to;
+      addLog(s, "useTeleport", [col, realType(p), toSquare(from), toSquare(to)]);
+      arrive(s, p, to);
+      break;
+    }
+    case "swap": {
+      const p = occ[key(...act.sq)], q = occ[key(...act.sq2)];
+      const a = s.board[p], b = s.board[q];
+      s.board[p] = b; s.board[q] = a;
+      addLog(s, "useSwap", [col, toSquare(a), toSquare(b)]);
+      arrive(s, p, b);
+      if (s.board[q]) arrive(s, q, a);
+      break;
+    }
+    case "mycall":
+      // the opponent's first roll next turn will be this type
+      s.forced = { col: opp, type: act.type, ply: s.ply + 1 };
+      addLog(s, "useMycall", [col, act.type]);
+      break;
+    case "rewind":
+      return rewind(s, col);
+  }
+  return done();
+}
+
+// Wheel of Time: undo the opponent's last turn. They lose it, and it's this player's move again.
+function rewind(s, col) {
+  const opp = other(col), snap = s.snaps[opp];
+  const keep = {
+    log: s.log, seq: s.seq, cfg: s.cfg, clock: s.clock, turnStart: s.turnStart, rollN: s.rollN,
+    hand: s.hands[col], points: s.points[col], earned: s.earned[col],
+  };
+  const old = JSON.parse(JSON.stringify(snap));
+  for (const k of Object.keys(s)) if (!(k in old) && !["snaps"].includes(k)) delete s[k];
+  Object.assign(s, old);
+  s.log = keep.log; s.seq = keep.seq; s.cfg = keep.cfg; s.clock = keep.clock; s.turnStart = keep.turnStart; s.rollN = keep.rollN;
+  s.hands[col] = keep.hand; s.points[col] = keep.points; s.earned[col] = keep.earned;
+  s.snaps = { [col]: null, [opp]: null };
+  addLog(s, "useRewind", [col, opp]);
+  advance(s, true);
+  return true;
+}
+const SNAP_SKIP = new Set(["log", "snaps", "seq", "cfg", "clock", "turnStart", "rollN"]);
+function snapshot(s) {
+  const o = {};
+  for (const k in s) if (!SNAP_SKIP.has(k)) o[k] = s[k];
+  return JSON.parse(JSON.stringify(o));
+}
+
 function buy(s, i) {
   const item = SHOP[i];
   if (!item || !canBuy(s) || s.points[s.turn] < item[2]) return false;
@@ -297,6 +513,7 @@ function freshState(seq = 0, cfg) {
     ply: 0, moved: false, cardUsed: false, postCard: false, pendingCopy: null, nextId: 1,
     hands: both(() => []), points: both(0), earned: both(0), dist: both(0), nomadWon: both(0),
     locks: [], disguise: { w: null, b: null }, mines: [], zones: [],
+    shields: [], curses: [], forced: null, doubleNext: false, choice: null, snaps: { w: null, b: null },
     // settings and timers
     cfg: normCfg(cfg), turnStart: Date.now(), clock: null, rollN: 0,
   };
@@ -309,14 +526,24 @@ function freshState(seq = 0, cfg) {
 // so the game doesn't end while they hold one, could buy one, or hold a Wanderer.
 function couldRescue(s, col) {
   if (!s.cfg.cards) return false;
-  return s.hands[col].some(c => c.t === "barricade" || c.t === "nomad") || s.points[col] >= 4;
+  const helps = ["barricade", "nomad", "quake", "teleport", "swap", "rewind", "thief"];
+  return s.hands[col].some(c => helps.includes(c.t)) || s.points[col] >= 3;
 }
 
 function beginTurn(s) {
   s.deadRolls = {}; s.locked = null; s.note = null;
-  s.moved = false; s.cardUsed = false; s.postCard = false;
+  s.moved = false; s.cardUsed = false; s.postCard = false; s.doubleNext = false; s.choice = null;
   s.locks = s.locks.filter(l => l.until > s.ply);
+  s.shields = s.shields.filter(x => x.until > s.ply && s.board[x.piece]);
   for (const c of ["w", "b"]) if (s.disguise[c] && s.disguise[c].until <= s.ply) s.disguise[c] = null;
+  // Cursed Dice wears off: take its extra "king" back out of the roll list
+  s.curses = s.curses.filter(cu => {
+    if (cu.until > s.ply) return true;
+    const i = s.rollLists[cu.col].lastIndexOf("king");
+    if (i >= 0 && s.rollLists[cu.col].filter(x => x === "king").length > 1) s.rollLists[cu.col].splice(i, 1);
+    return false;
+  });
+  if (s.forced && s.forced.ply < s.ply) s.forced = null;
   const t = s.turn, opp = other(t);
 
   if (!s.board[t + "_king"]) {
@@ -344,14 +571,17 @@ function beginTurn(s) {
   if (!hasAnyLegalMove(s, t) && !couldRescue(s, t)) {
     s.over = s.checked ? { k: "mate", w: opp } : { k: "stale", w: null };
     addLog(s, "over", [s.over.k, opp]);
+    return;
   }
+  // remembered for Wheel of Time, which can undo this turn
+  if (s.snaps) s.snaps[t] = snapshot(s);
 }
 
-function advance(s) {
+function advance(s, noDraw) {
   const now = Date.now();
   if (s.clock) s.clock[s.turn] = Math.max(0, s.clock[s.turn] - (now - s.turnStart));
   s.ply++;
-  if (s.cfg.cards && s.cfg.drawEvery && s.ply % (s.cfg.drawEvery * 2) === 0) {
+  if (!noDraw && s.cfg.cards && s.cfg.drawEvery && s.ply % (s.cfg.drawEvery * 2) === 0) {
     addLog(s, "timedDraw", []);
     for (const c of ["w", "b"]) give(s, c, drawDeck(), "draw");
   }
@@ -410,39 +640,16 @@ function makeMove(s, r, c) {
     if (chance(0.20)) { const x = Math.random(); give(s, col, { t: "barricade", l: x < 0.6 ? 1 : x < 0.9 ? 2 : 3 }, "capture"); }
   }
 
-  // hidden mine on the square
-  let alive = true;
-  const mi = s.mines.findIndex(m => samePos(m.sq, to));
-  if (mi >= 0) {
-    s.mines.splice(mi, 1);
-    if (isKing(piece)) addLog(s, "kingMine", [col, toSquare(to)]);
-    else { delete s.board[piece]; alive = false; addLog(s, "mineKill", [col, realType(piece), toSquare(to)]); }
-  }
-
-  // hidden respawn zone (kings can't be copied, so a king leaves it in place)
-  const zi = alive && !isKing(piece) ? s.zones.findIndex(z => samePos(z.sq, to)) : -1;
-  if (zi >= 0) {
-    s.zones.splice(zi, 1);
-    const sqs = copySquares(s, to);
-    if (sqs.length) { s.pendingCopy = { type: realType(piece), squares: sqs }; addLog(s, "zoneFound", [col, realType(piece), toSquare(to)]); }
-    else addLog(s, "zoneLost", [col, toSquare(to)]);
-  }
+  arrive(s, piece, to);
 
   // distance travelled -> Wanderer
   s.dist[col] += roll === "knight" ? 5 : Math.max(Math.abs(to[0] - from[0]), Math.abs(to[1] - from[1]));
-  while (s.nomadWon[col] < 2 && s.dist[col] >= NOMAD_AT[s.nomadWon[col]]) {
+  while (s.nomadWon[col] < 4 && s.dist[col] >= NOMAD_AT[s.nomadWon[col]]) {
     s.nomadWon[col]++;
     give(s, col, { t: "nomad", l: s.nomadWon[col] }, "distance");
   }
 
   if (chance(0.04)) give(s, col, { t: "reborn", l: 1 }, "move");
-
-  // pawn on the far side: bonus roll type + 70% Bring Me My Legs
-  const lastRow = col === "w" ? 0 : 7;
-  if (alive && realType(piece) === "pawn" && r === lastRow && !s.promoted.includes(piece)) {
-    s.pendingPromo = { piece };
-    if (chance(0.70)) give(s, col, { t: "mine", l: 1 }, "pawnEnd");
-  }
 
   s.postCard = !!taken && !isKing(taken) && s.hands[col].length > 0;
   afterStep(s);
@@ -472,6 +679,7 @@ function migrate(s) {
   const f = freshState(0);
   for (const k in f) if (s[k] === undefined) s[k] = f[k];
   s.cfg = normCfg(s.cfg);
+  for (const x of s.mines.concat(s.zones)) if (!Array.isArray(x.seen)) x.seen = [];
   if (Array.isArray(s.log)) s.log = s.log.map(x => typeof x === "string" ? { k: "raw", a: [x.slice(0, 299)] } : x);
   if (typeof s.note === "string") s.note = null;
   if (s.over && typeof s.over.title === "string") s.over = { k: "raw", w: null, title: String(s.over.title), text: String(s.over.text) };
@@ -489,6 +697,7 @@ function timeoutTurn(s) {
     const [card] = s.hands[t].splice(Math.floor(Math.random() * s.hands[t].length), 1);
     addLog(s, "discarded", [t, card.t, card.l], t);
   }
+  s.choice = null;
   if (still() && s.pendingCopy) placeCopy(s, rand(s.pendingCopy.squares));
   if (still() && s.pendingPromo) choosePromotion(s, rand(PROMO_TYPES));
   if (still() && s.postCard) endPostCard(s);
@@ -544,15 +753,36 @@ function applyAction(s, col, act) {
     case "roll": {
       if (!isSq(act.sq)) return fail("msgBadAction");
       if (tooMany) return fail("msgDiscard");
-      if (s.pendingCopy || s.pendingPromo || s.postCard || s.moved) return fail("msgBadAction");
+      if (s.pendingCopy || s.pendingPromo || s.postCard || s.moved || s.choice) return fail("msgBadAction");
       if (s.locked) return fail("msgMustMoveShort");
       const p = squares(s.board)[key(...act.sq)];
       if (!p || p[0] !== col) return fail("msgBadAction");
       if (isFrozen(s, p)) return fail("msgFrozen");
       if (s.deadRolls[p]) return fail("msgDeadShort");
-      const roll = rand(optionsFor(p, s));
+      let roll = rand(optionsFor(p, s));
+      // My Call!: the opponent chose this roll (not for a king that has lost that move type)
+      if (s.forced && s.forced.col === col && s.forced.ply === s.ply) {
+        const f = s.forced.type;
+        s.forced = null;
+        if (optionsFor(p, s).includes(f)) { roll = f; addLog(s, "forcedRoll", [col, f]); }
+      }
       s.rollN++;
+      if (s.doubleNext) {
+        // Double Dice: roll twice and let the player choose
+        s.doubleNext = false;
+        const second = rand(optionsFor(p, s));
+        s.choice = { piece: p, rolls: [roll, second], moves: [legalMoves(s, p, roll).length, legalMoves(s, p, second).length] };
+        s.lastRoll = { piece: p, roll };
+        addLog(s, "doubleRolled", [col, roll, second]);
+        return { ok: true, result: "choice" };
+      }
       return { ok: true, result: resolveRoll(s, p, roll) };
+    }
+    case "pick": {
+      if (!s.choice || ![0, 1].includes(act.i)) return fail("msgBadAction");
+      const { piece, rolls } = s.choice;
+      s.choice = null;
+      return { ok: true, result: resolveRoll(s, piece, rolls[act.i]) };
     }
     case "move":
       if (!s.locked || !isSq(act.sq)) return fail("msgBadAction");
@@ -562,11 +792,10 @@ function applyAction(s, col, act) {
       return placeCopy(s, act.sq) ? { ok: true } : fail("msgBadTarget");
     case "card": {
       if (!Number.isInteger(act.idx)) return fail("msgBadAction");
-      if (!canUseCard(s)) return fail("msgNoCardNow");
       const card = s.hands[col][act.idx];
       if (!card) return fail("msgBadAction");
-      if (cardTarget(card) && !isSq(act.sq)) return fail("msgBadTarget");
-      return useCard(s, act.idx, act.sq) ? { ok: true } : fail("msgBadTarget");
+      if (!canPlay(s, card)) return fail("msgNoCardNow");
+      return useCard(s, act.idx, act) ? { ok: true } : fail("msgBadTarget");
     }
     case "buy": {
       const item = SHOP[act.i];
@@ -584,7 +813,8 @@ function applyAction(s, col, act) {
 
 // ---------- computer player ----------
 // botStep picks and applies one action for the side to move. Returns the action, or null.
-const CARD_WORTH = { nomad: 9, barricade: 6, abra: 5, mine: 4, reborn: 3 };
+const CARD_WORTH = { nomad: 9, rewind: 9, counter: 8, barricade: 6, thief: 6, abra: 5, shield: 5, crown: 5, double: 4, mine: 4,
+  curse: 4, swap: 3, mycall: 4, quake: 3, teleport: 3, reborn: 3, scope: 2, second: 3 };
 function botMoveScore(s, p, m) {
   const col = p[0], blk = lockSet(s), occ = squares(s.board);
   const there = occ[key(...m)];
@@ -605,30 +835,49 @@ function botMoveScore(s, p, m) {
 }
 function botPickCard(s) {
   const col = s.turn, hand = s.hands[col], blk = lockSet(s), opp = other(col);
+  const myPieces = Object.keys(s.board).filter(p => p[0] === col && !isKing(p));
+  const threatened = myPieces.filter(p => attackers(s.board, s.board[p], opp, blk).length).sort((a, b) => VALUE[realType(b)] - VALUE[realType(a)]);
+  const k = s.board[col + "_king"];
+  const checkers = k ? attackers(s.board, k, opp, blk) : [];
   for (let i = 0; i < hand.length; i++) {
     const c = hand[i];
-    if (c.t === "nomad" && hand.length + c.l + 1 <= HAND_MAX) return { kind: "card", idx: i };
-    if (c.t === "barricade") {
-      const k = s.board[col + "_king"];
-      const checkers = k ? attackers(s.board, k, opp, blk) : [];
-      if (checkers.length === 1 && !isKing(checkers[0])) return { kind: "card", idx: i, sq: s.board[checkers[0]] };
-      if (Math.random() < .3) {
-        // freeze the enemy's most valuable piece that is attacking one of ours
-        let best = null, bestV = 0;
-        for (const q in s.board) {
-          if (q[0] !== opp || isKing(q) || blk.has(key(...s.board[q]))) continue;
-          const v = VALUE[realType(q)];
-          if (v > bestV) { best = q; bestV = v; }
-        }
-        if (best && bestV >= 3) return { kind: "card", idx: i, sq: s.board[best] };
+    if (!canPlay(s, c)) continue;
+    const use = extra => ({ kind: "card", idx: i, ...extra });
+    switch (c.t) {
+      case "nomad": if (hand.length + c.l + 1 <= HAND_MAX) return use(); break;
+      case "rewind": {
+        const last = [...s.log].reverse().find(e => e.k === "move");
+        if (last && last.a[0] === opp && last.a[5]) return use();   // undo a capture
+        break;
       }
-    }
-    if (c.t === "abra" && Math.random() < .4) return { kind: "card", idx: i };
-    if (c.t === "reborn" && Math.random() < .25) return { kind: "card", idx: i };
-    if (c.t === "mine" && Math.random() < .35) {
-      // somewhere in the middle of the board, ahead of the enemy's pieces
-      const free = emptySquares(s).filter(q => q[0] >= 2 && q[0] <= 5 && validTarget(s, c, q));
-      if (free.length) return { kind: "card", idx: i, sq: rand(free) };
+      case "barricade":
+        if (checkers.length === 1 && !isKing(checkers[0])) return use({ sq: s.board[checkers[0]] });
+        if (Math.random() < .3) {
+          let best = null, bestV = 0;
+          for (const q in s.board) {
+            if (q[0] !== opp || isKing(q) || blk.has(key(...s.board[q]))) continue;
+            const v = VALUE[realType(q)];
+            if (v > bestV) { best = q; bestV = v; }
+          }
+          if (best && bestV >= 3) return use({ sq: s.board[best] });
+        }
+        break;
+      case "shield": if (threatened.length && VALUE[realType(threatened[0])] >= 3 && !isShielded(s, threatened[0])) return use({ sq: s.board[threatened[0]] }); break;
+      case "crown": { const lost = TYPES.filter(t => !s.kingOptions[col].includes(t)); return use({ type: lost.includes("queen") ? "queen" : lost[0] }); }
+      case "thief": return use();
+      case "quake": if (s.locks.some(l => squares(s.board)[key(...l.sq)] && squares(s.board)[key(...l.sq)][0] === col) || s.mines.length >= 2) return use(); break;
+      case "curse": if (Math.random() < .4) return use(); break;
+      case "mycall": if (Math.random() < .4) return use({ type: "pawn" }); break;
+      case "abra": if (Math.random() < .4) return use(); break;
+      case "reborn": if (Math.random() < .25) return use(); break;
+      case "teleport": if (threatened.length && Math.random() < .3) return use({ sq: s.board[threatened[0]] }); break;
+      case "double": if (!s.moved && Math.random() < .4) return use(); break;
+      case "mine":
+        if (Math.random() < .35) {
+          const free = emptySquares(s).filter(q => q[0] >= 2 && q[0] <= 5 && validTarget(s, c, q));
+          if (free.length) return use({ sq: rand(free) });
+        }
+        break;
     }
   }
   return null;
@@ -646,18 +895,27 @@ function botChooseAction(s) {
     return { kind: "copy", sq };
   }
   if (s.pendingPromo) return { kind: "promo", type: rand(["queen", "queen", "rook", "knight"]) };
+  if (s.choice) {
+    // Double Dice: take the roll with more moves, or a capture
+    const sc = r => legalMoves(s, s.choice.piece, r).reduce((m, q) => { const o = squares(s.board)[key(...q)]; return Math.max(m, 1 + (o ? VALUE[realType(o)] * 3 : 0)); }, 0);
+    return { kind: "pick", i: sc(s.choice.rolls[1]) > sc(s.choice.rolls[0]) ? 1 : 0 };
+  }
   if (s.postCard) return (canUseCard(s) && botPickCard(s)) || { kind: "endPost" };
   if (s.locked) {
     const { piece, moves } = s.locked;
     let best = moves[0], bestScore = -Infinity;
     for (const m of moves) { const sc = botMoveScore(s, piece, m); if (sc > bestScore) { best = m; bestScore = sc; } }
+    // a bad roll: try Second Chance
+    const sec = hand.findIndex(c => c.t === "second");
+    if (bestScore < -5 && sec >= 0 && canPlay(s, hand[sec])) return { kind: "card", idx: sec };
     return { kind: "move", sq: best };
   }
   if (inPreMove(s)) {
     if (!s.cardUsed) { const c = botPickCard(s); if (c) return c; }
     if (hand.length < 5) {
-      const wish = [[5, 9], [3, 6], [1, 4]].find(([i, price]) => s.points[col] >= price + 2);
-      if (wish) return { kind: "buy", i: wish[0] };
+      // buy something useful it can afford, keeping a little in reserve
+      const wish = ["abra", "shield", "barricade", "thief", "double"].map(t => SHOP.findIndex(x => x[0] === t && x[1] === 1)).find(i => i >= 0 && s.points[col] >= SHOP[i][2] + 2);
+      if (wish !== undefined) return { kind: "buy", i: wish };
     }
   }
   // choose which piece to roll: favour pieces that could capture or escape check
@@ -693,12 +951,13 @@ function botStep(s) {
 // ---------- what each player may see (online games) ----------
 // viewer: "w", "b" or null (spectator). Hidden: the other side's cards, private log details,
 // mines that aren't yours to see, respawn spots, and for an Abracadabra victim the real types.
-const HIDDEN_LOG = { got: 1, bought: 1, discarded: 1 };
+const HIDDEN_LOG = { got: 1, bought: 1, discarded: 1, useThief: 1, scopeFound: 1 };
 function viewFor(s, viewer) {
-  const v = JSON.parse(JSON.stringify(s));
+  const v = JSON.parse(JSON.stringify({ ...s, snaps: null }));   // Wheel of Time snapshots hold everything: never sent
   for (const c of ["w", "b"]) if (c !== viewer) v.hands[c] = v.hands[c].map(() => null);
-  v.zones = [];
-  v.mines = v.mines.filter(m => m.by === viewer && m.at === s.ply);
+  // only respawn spots and mines you found with Binoculars, and your own mine until your move
+  v.zones = v.zones.filter(z => z.seen && z.seen.includes(viewer));
+  v.mines = v.mines.filter(m => (m.by === viewer && m.at === s.ply) || (m.seen && m.seen.includes(viewer)));
   v.log = v.log.map(e => {
     if (e.o && e.o !== viewer && HIDDEN_LOG[e.k]) return { ...e, a: [e.a[0]] };
     if (e.k === "useMine" && e.a[0] !== viewer) return { ...e, a: [e.a[0]] };
@@ -721,12 +980,14 @@ function viewFor(s, viewer) {
     if (v.lastRoll) v.lastRoll.piece = rn(v.lastRoll.piece);
     if (v.pendingPromo) v.pendingPromo.piece = rn(v.pendingPromo.piece);
     if (v.pendingCopy) v.pendingCopy.type = dis.type;
+    if (v.choice) v.choice.piece = rn(v.choice.piece);
+    v.shields = v.shields.map(x => ({ ...x, piece: rn(x.piece) }));
     v.promoted = [];
     v.captured = { w: [], b: [] };
     v.log = v.log.map(e => {
       const a = e.a.slice();
       if (e.k === "move") { a[1] = "?"; if (a[5]) a[5] = "?"; }
-      if (["mineKill", "zoneFound", "copyPlaced", "copyMine"].includes(e.k)) a[1] = "?";
+      if (["mineKill", "zoneFound", "copyPlaced", "copyMine", "useShield", "shieldMine", "useTeleport"].includes(e.k) && a[0] === viewer) a[1] = "?";
       return { ...e, a };
     });
     v.hiddenInfo = true;
@@ -736,7 +997,7 @@ function viewFor(s, viewer) {
 
 // ---------- game records (replays) ----------
 const FRAME_KEYS = ["board", "turn", "ply", "kingOptions", "captured", "hands", "points", "earned", "dist", "nomadWon",
-  "locks", "mines", "zones", "disguise", "rollLists", "checked", "over", "pendingCopy", "clock"];
+  "locks", "mines", "zones", "disguise", "rollLists", "checked", "over", "pendingCopy", "clock", "shields", "curses", "forced"];
 function frameOf(s) {
   const f = {};
   for (const k of FRAME_KEYS) f[k] = s[k];
@@ -758,7 +1019,7 @@ function recordStep(rec, s) {
 const API = {
   TYPES, PROMO_TYPES, FILES, PIECE_RE, CARD_KINDS, SHOP, DECK, HAND_MAX, NOMAD_AT, DURATION, VALUE, DEFAULT_CFG, CFG_CHOICES,
   key, onBoard, other, toSquare, isKing, rand, samePos, realType, squares, optionsFor, lockSet, isFrozen,
-  legalMoves, inCheck, freshState, normCfg, migrate, canUseCard, canBuy, cardTarget, validTarget, addLog,
+  legalMoves, inCheck, freshState, beginTurn, normCfg, migrate, canUseCard, canPlay, canBuy, cardTarget, validTarget, validType, addLog, CARD_INFO, isShielded,
   applyAction, tick, timeLeft, botStep, viewFor, newRecord, recordStep, frameOf,
 };
 if (typeof module !== "undefined" && module.exports) module.exports = API;

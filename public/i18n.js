@@ -82,7 +82,7 @@ const EN = {
   // cards panel
   shopTitle: "Shop",
   shopPoints: n => `${n} points to spend`,
-  buyFor: n => `${n} pts`,
+  buyFor: n => `${n} pts`, buy: "Buy",
   watchingShop: "Players buy cards here at the start of their turn.",
   handLabel: (c, n) => `${c} · ${n}/7 cards`,
   pickCard: "Click one of your cards to see what it does.",
@@ -351,7 +351,7 @@ const TR = {
   yourTurn: c => `Sıra sende (${c})`,
   shopTitle: "Dükkân",
   shopPoints: n => `Harcanabilir ${n} puan`,
-  buyFor: n => `${n} puan`,
+  buyFor: n => `${n} puan`, buy: "Al",
   watchingShop: "Oyuncular kartları sıralarının başında buradan alır.",
   handLabel: (c, n) => `${c} · ${n}/7 kart`,
   pickCard: "Ne yaptığını görmek için kartlarından birine tıkla.",

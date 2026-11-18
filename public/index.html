@@ -1299,19 +1299,214 @@ async function fxDiscard(col, card) {
   remove(n);
 }
 
+
+// ---------- board events: mines, respawn spots, freezes, check, captures ----------
+function pieceGlyph(col, type, size) {
+  const d = disguiseOnViewer();
+  const t = d && col === viewer() && type !== "king" ? d.type : type;
+  return `<span class="piece ${col}" style="font-size:${size}px">${GLYPH[t] || ""}${VS}</span>`;
+}
+async function blink(p, color, times = 2) {
+  const f = fxNode("", "fx-dot", p.x, p.y, `width:${p.w}px;height:${p.h}px;border-radius:4px;background:${color}`);
+  await play(f, Array.from({ length: times * 2 + 1 }, (_, i) => ({ transform: T(p.x, p.y), opacity: i % 2 ? .9 : 0 })), { duration: 160 * times * 2, easing: "linear" });
+  remove(f);
+}
+
+// a piece steps on a hidden mine: warning blink, a big blast, and the piece is thrown into the air
+async function fxMineKill(col, type, sqName) {
+  const p = sqPos(sqName);
+  await blink(p, "rgba(255,40,40,.75)", 2);
+  const flying = fxNode(pieceGlyph(col, type, p.w * .78), "", p.x, p.y);
+  const dir = Math.random() < .5 ? -1 : 1;
+  play(flying, [
+    { transform: T(p.x, p.y, "rotate(0) scale(1)"), opacity: 1 },
+    { transform: T(p.x + dir * p.w * 1.2, p.y - p.h * 2.6, `rotate(${dir * 260}deg) scale(1.1)`), opacity: 1, offset: .45 },
+    { transform: T(p.x + dir * p.w * 2.2, p.y + p.h * 1.5, `rotate(${dir * 620}deg) scale(.5)`), opacity: 0 },
+  ], { duration: 1200, easing: "cubic-bezier(.3,.6,.5,1)" }).then(remove);
+  const ring = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 2}px;height:${p.w * 2}px;color:#ffd27a`);
+  play(ring, [{ transform: T(p.x, p.y, "scale(.2)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(2.2)"), opacity: 0 }], { duration: 600 }).then(remove);
+  particles(10, p.x, p.y, () => fxNode("", "fx-smoke", 0, 0, "background:radial-gradient(circle, rgba(90,80,80,.8), rgba(40,40,40,0) 70%);width:40px;height:40px"), p.w * 1.4, 1400);
+  await fxBoom(sqName, true);
+  // a scorch mark that fades away
+  const scorch = fxNode("", "fx-dot", p.x, p.y, `width:${p.w * .8}px;height:${p.w * .8}px;background:radial-gradient(circle, rgba(30,20,15,.75), rgba(30,20,15,0) 70%)`);
+  await play(scorch, [{ opacity: 1 }, { opacity: 1, offset: .5 }, { opacity: 0 }], { duration: 1400 });
+  remove(scorch);
+}
+
+// a king walks onto a mine: it goes off, but a golden shield takes the blast
+async function fxKingMine(col, sqName) {
+  const p = sqPos(sqName);
+  await blink(p, "rgba(255,40,40,.75)", 1);
+  const shield = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 1.3}px;height:${p.w * 1.3}px;color:#f2c94c;background:radial-gradient(circle, rgba(242,201,76,.25), transparent 70%);box-shadow:0 0 20px #f2c94c`);
+  play(shield, [
+    { transform: T(p.x, p.y, "scale(.3)"), opacity: 0 },
+    { transform: T(p.x, p.y, "scale(1)"), opacity: 1, offset: .25 },
+    { transform: T(p.x, p.y, "scale(1.08)"), opacity: 1, offset: .7 },
+    { transform: T(p.x, p.y, "scale(1.4)"), opacity: 0 },
+  ], { duration: 1200 }).then(remove);
+  await fxBoom(sqName, false);
+}
+
+// the owner's mine goes out of sight after their move: it sinks into the ground
+async function fxMineHide(sqName) {
+  const p = sqPos(sqName);
+  const m = fxNode("✹", "", p.x, p.y, `font-size:${p.w / 1.5}px;color:#ff4d4d;text-shadow:0 0 3px #000`);
+  particles(6, p.x, p.y, dot("#8a5a2b"), p.w * .6, 600);
+  await play(m, [{ transform: T(p.x, p.y, "scale(1)"), opacity: .9 }, { transform: T(p.x, p.y + 6, "scale(.2) rotate(180deg)"), opacity: 0 }], { duration: 700, easing: "ease-in" });
+  remove(m);
+}
+
+// a hidden respawn spot is found: a green portal swirls open and the piece's ghost rises
+async function fxZone(col, type, sqName, found) {
+  const p = sqPos(sqName), sz = p.w * 1.8;
+  const color = found ? "69,217,138" : "150,150,160";
+  const portal = fxNode("", "fx-ring", p.x, p.y, `width:${sz}px;height:${sz}px;border:none;background:repeating-conic-gradient(rgba(${color},.85) 0 15deg, rgba(${color},.1) 15deg 45deg);-webkit-mask:radial-gradient(circle, transparent 28%, #000 30%, #000 68%, transparent 70%);mask:radial-gradient(circle, transparent 28%, #000 30%, #000 68%, transparent 70%)`);
+  const spin = play(portal, [
+    { transform: T(p.x, p.y, "scale(0) rotate(0)"), opacity: 0 },
+    { transform: T(p.x, p.y, "scale(1) rotate(360deg)"), opacity: 1, offset: .4 },
+    { transform: T(p.x, p.y, "scale(1) rotate(720deg)"), opacity: 1, offset: .75 },
+    { transform: T(p.x, p.y, "scale(0) rotate(1080deg)"), opacity: 0 },
+  ], { duration: found ? 1500 : 1000, easing: "ease-in-out" });
+  if (found) {
+    const ghost = fxNode(pieceGlyph(col, type, p.w * .78), "", p.x, p.y, "filter:drop-shadow(0 0 10px #45d98a)");
+    play(ghost, [{ transform: T(p.x, p.y, "scale(1)"), opacity: 0 }, { transform: T(p.x, p.y - p.h * .6, "scale(1.15)"), opacity: .7, offset: .5 }, { transform: T(p.x, p.y - p.h * 1.3, "scale(1.3)"), opacity: 0 }], { duration: 1300, delay: 300 }).then(remove);
+    particles(14, p.x, p.y, dot("#a6ffcc"), p.w * 1.3, 1100);
+  }
+  await spin;
+  remove(portal);
+}
+
+// Barricade freezing a piece: frost spreads over the square with ice crystals
+async function fxFreeze(sqName) {
+  const p = sqPos(sqName);
+  const frost = fxNode("", "fx-dot", p.x, p.y, `width:${p.w}px;height:${p.h}px;border-radius:4px;background:radial-gradient(circle, rgba(220,240,255,.8), rgba(127,196,255,.35) 60%, transparent 75%)`);
+  particles(12, p.x, p.y, star(["❄", "✦", "❅"], ["#dff1ff", "#7fc4ff"]), p.w * .9, 900);
+  await play(frost, [{ transform: T(p.x, p.y, "scale(.2)"), opacity: 0 }, { transform: T(p.x, p.y, "scale(1)"), opacity: 1, offset: .4 }, { transform: T(p.x, p.y, "scale(1.05)"), opacity: 0 }], { duration: 1000 });
+  remove(frost);
+}
+
+// a lock runs out: the bars break apart and fall away
+async function fxUnlock(sqName) {
+  const p = sqPos(sqName);
+  const bars = [-0.3, 0, 0.3].map((f, i) => {
+    const b = fxNode("", "fx-bar", 0, 0, `height:${p.h * .95}px;width:${p.w * .14}px`);
+    const x = p.x + f * p.w, side = f === 0 ? (Math.random() < .5 ? -1 : 1) : Math.sign(f);
+    return play(b, [
+      { transform: T(x, p.y, "rotate(0)"), opacity: 1 },
+      { transform: T(x + side * p.w * .5, p.y - p.h * .3, `rotate(${side * 40}deg)`), opacity: 1, offset: .3 },
+      { transform: T(x + side * p.w * 1.1, p.y + p.h * 1.4, `rotate(${side * 140}deg)`), opacity: 0 },
+    ], { duration: 800, delay: i * 60, easing: "cubic-bezier(.3,.5,.6,1)" }).then(remove);
+  });
+  particles(8, p.x, p.y, star(["✦"], ["#cfe6ff", "#fff"]), p.w * .8, 600);
+  await Promise.all(bars);
+}
+
+// Abracadabra wears off
+async function fxSpellEnds(col) {
+  if (viewer() !== col) return boardFlash("rgba(176,114,242,.3)", 600);
+  boardFlash("rgba(176,114,242,.5)", 900);
+  boardClass("fx-magic", 900);
+  const b = boardPos();
+  particles(16, b.x, b.y, star(["✧", "✦"], ["#d9b3ff", "#fff"]), b.w * .5, 900);
+  await fxBanner(tx("fxSpellEnds"));
+}
+
+// check: the king's square pulses red and the lost move type shatters
+async function fxCheck(col, lost) {
+  const k = S.board[col + "_king"];
+  if (!k) return;
+  const p = sqPos(toSquare(k));
+  const ring = fxNode("", "fx-ring", p.x, p.y, `width:${p.w}px;height:${p.w}px;color:#ff4d4d;box-shadow:0 0 18px #ff4d4d`);
+  play(ring, [{ transform: T(p.x, p.y, "scale(.6)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(1.8)"), opacity: 0 }], { duration: 700, iterations: 2 }).then(remove);
+  if (!lost) return sleep(700);
+  const tag = fxNode(`− ${esc(typName(lost))}`, "fx-banner", p.x, p.y - p.h * .8, "font-size:18px;padding:6px 12px;color:#ff7a6b;box-shadow:0 0 0 2px rgba(229,72,77,.7)");
+  await play(tag, [
+    { transform: T(p.x, p.y - p.h * .5, "scale(.5)"), opacity: 0 },
+    { transform: T(p.x, p.y - p.h * .9, "scale(1.1)"), opacity: 1, offset: .3 },
+    { transform: T(p.x, p.y - p.h * .9, "scale(1)"), opacity: 1, offset: .75 },
+    { transform: T(p.x, p.y - p.h * .9, "scale(1.3)"), opacity: 0, filter: "blur(6px)" },
+  ], { duration: 1300 });
+  remove(tag);
+  particles(10, p.x, p.y - p.h * .9, dot("#ff7a6b"), p.w, 600);
+}
+
+// a capture: an impact flash where the piece was taken
+async function fxCapture(col, tookType, sqName) {
+  const p = sqPos(sqName), opp = other(col);
+  const slash = fxNode("", "fx-dot", p.x, p.y, `width:${p.w * 1.2}px;height:6px;border-radius:3px;background:linear-gradient(90deg, transparent, #fff, transparent);box-shadow:0 0 12px #fff`);
+  play(slash, [{ transform: T(p.x, p.y, "rotate(-35deg) scaleX(0)"), opacity: 1 }, { transform: T(p.x, p.y, "rotate(-35deg) scaleX(1)"), opacity: 1, offset: .5 }, { transform: T(p.x, p.y, "rotate(-35deg) scaleX(1.2)"), opacity: 0 }], { duration: 350 }).then(remove);
+  const ghost = fxNode(pieceGlyph(opp, tookType, p.w * .7), "", p.x, p.y);
+  particles(8, p.x, p.y, dot(opp === "w" ? "#fbfbfb" : "#2a2a30"), p.w * .8, 500);
+  await play(ghost, [{ transform: T(p.x, p.y, "scale(1)"), opacity: .9 }, { transform: T(p.x, p.y - 10, "scale(.3) rotate(90deg)"), opacity: 0 }], { duration: 450 });
+  remove(ghost);
+}
+
+// pawn reaches the end: golden burst and the bonus type floats up
+async function fxPromo(col, type, sqName) {
+  if (!sqName) return;
+  const p = sqPos(sqName);
+  const rays = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * 2.2}px;height:${p.w * 2.2}px;border:none;background:repeating-conic-gradient(rgba(242,201,76,.7) 0 10deg, transparent 10deg 30deg)`);
+  play(rays, [{ transform: T(p.x, p.y, "scale(0) rotate(0)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(1.3) rotate(120deg)"), opacity: 0 }], { duration: 900 }).then(remove);
+  particles(14, p.x, p.y, star(["★", "✦"], ["#f2c94c", "#fff3b0"]), p.w * 1.4, 900);
+  const tag = fxNode(`+1 ${esc(typName(type))}`, "fx-banner", p.x, p.y, "font-size:18px;padding:6px 12px");
+  await play(tag, [{ transform: T(p.x, p.y, "scale(.5)"), opacity: 0 }, { transform: T(p.x, p.y - p.h, "scale(1)"), opacity: 1, offset: .4 }, { transform: T(p.x, p.y - p.h * 1.6, "scale(1)"), opacity: 0 }], { duration: 1300 });
+  remove(tag);
+}
+
+// game over: confetti for a win, grey dust for a draw
+async function fxOver(kind) {
+  const W = innerWidth, colors = kind === "stale" ? ["#8b90a0", "#5c6170"] : ["#f2c94c", "#3fbf6a", "#e5484d", "#4d93ee", "#b072f2", "#fff"];
+  const all = [];
+  for (let i = 0; i < 70; i++) {
+    const x = rnd(0, W), c = rand(colors);
+    const n = fxNode("", "fx-dot", x, -20, `width:${rnd(6, 11)}px;height:${rnd(10, 16)}px;border-radius:2px;background:${c}`);
+    all.push(play(n, [{ transform: T(x, -20, "rotate(0)"), opacity: 1 }, { transform: T(x + rnd(-120, 120), innerHeight + 40, `rotate(${rnd(360, 1080)}deg)`), opacity: .8 }], { duration: rnd(1800, 3200), delay: rnd(0, 600), easing: "cubic-bezier(.3,.2,.6,1)" }).then(remove));
+  }
+  await Promise.all(all);
+}
+
+// things that change without a log line: a lock running out, a spell wearing off, your mine going out of sight
+let fxSnap = null;
+function takeSnap() {
+  const v = viewer();
+  return {
+    v,
+    locks: new Map(S.locks.map(l => [key(...l.sq), toSquare(l.sq)])),
+    dis: { w: !!S.disguise.w, b: !!S.disguise.b },
+    mines: new Map(isPlayer(v) ? S.mines.filter(m => m.by === v && m.at === S.ply).map(m => [key(...m.sq), toSquare(m.sq)]) : []),
+  };
+}
+function diffFx(a, b) {
+  const out = [];
+  for (const [k, sq] of a.locks) if (!b.locks.has(k)) out.push(() => fxUnlock(sq));
+  for (const c of ["w", "b"]) if (a.dis[c] && !b.dis[c]) out.push(() => fxSpellEnds(c));
+  if (a.v === b.v) {
+    const still = new Set(S.mines.map(m => key(...m.sq)));
+    for (const [k, sq] of a.mines) if (!b.mines.has(k) && still.has(k)) out.push(() => fxMineHide(sq));
+  }
+  return out;
+}
+
 function fxFor(e) {
   const a = e.a;
   switch (e.k) {
     case "got": return () => fxGot(a[0], { t: a[1], l: a[2] }, a[3]);
     case "bought": return () => fxGot(a[0], { t: a[1], l: a[2] }, "bought");
     case "discarded": return () => fxDiscard(a[0], { t: a[1], l: a[2] });
-    case "useBarricade": return () => fxBarricade(a[0], a[1], a[2]);
+    case "useBarricade": return () => fxBarricade(a[0], a[1], a[2]).then(() => a[3] ? fxFreeze(a[2]) : null);
     case "useAbra": return () => fxAbra(a[0], a[1]);
     case "useMine": return () => fxMine(a[0], a[1]);
     case "useReborn": return () => fxReborn(a[0]);
     case "useNomad": return () => fxNomad(a[0], a[1]);
-    case "mineKill": return () => fxBoom(a[2], true);
-    case "kingMine": return () => fxBoom(a[1], false);
+    case "mineKill": return () => fxMineKill(a[0], a[1], a[2]);
+    case "kingMine": return () => fxKingMine(a[0], a[1]);
+    case "zoneFound": return a[2] ? () => fxZone(a[0], a[1], a[2], true) : null;
+    case "zoneLost": return a[1] ? () => fxZone(a[0], "", a[1], false) : null;
+    case "move": return a[5] ? () => fxCapture(a[0], a[5], a[3]) : null;
+    case "checkLost": return () => fxCheck(a[0], a[1]);
+    case "checkBare": return () => fxCheck(a[0], null);
+    case "promo": return () => fxPromo(a[0], a[1], a[2]);
+    case "over": return () => fxOver(a[0]);
     case "copyPlaced": return () => fxCopy(a[2], false);
     case "copyMine": return () => fxCopy(a[2], true);
     case "timedDraw": return () => fxBanner(tx("fxDraw"));
@@ -1326,11 +1521,12 @@ function runFx(quiet) {
   if (last < fxSeen) fxSeen = 0;          // a new game started
   const fresh = S.log.filter(e => (e.n || 0) > fxSeen);
   fxSeen = Math.max(fxSeen, last);
+  const snap = takeSnap(), before = fxSnap;
+  fxSnap = snap;
   if (quiet || reduceMotion) return;
-  for (const e of fresh) {
-    const f = fxFor(e);
-    if (f) fxChain = fxChain.then(f).catch(err => console.error(err));
-  }
+  const queue = fresh.map(fxFor).filter(Boolean);
+  if (before) queue.push(...diffFx(before, snap));
+  for (const f of queue) fxChain = fxChain.then(f).catch(err => console.error(err));
 }
 
 // ---------- setup ----------

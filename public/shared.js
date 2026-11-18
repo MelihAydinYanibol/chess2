@@ -392,8 +392,8 @@ function makeMove(s, r, c) {
   if (zi >= 0) {
     s.zones.splice(zi, 1);
     const sqs = copySquares(s, to);
-    if (sqs.length) { s.pendingCopy = { type: realType(piece), squares: sqs }; addLog(s, "zoneFound", [col, realType(piece)]); }
-    else addLog(s, "zoneLost", [col]);
+    if (sqs.length) { s.pendingCopy = { type: realType(piece), squares: sqs }; addLog(s, "zoneFound", [col, realType(piece), toSquare(to)]); }
+    else addLog(s, "zoneLost", [col, toSquare(to)]);
   }
 
   // distance travelled -> Wanderer
@@ -421,7 +421,8 @@ function choosePromotion(s, type) {
   if (!s.pendingPromo || !PROMO_TYPES.includes(type)) return false;
   s.rollLists[s.turn].push(type);
   s.promoted.push(s.pendingPromo.piece);
-  addLog(s, "promo", [s.turn, type]);
+  const at = s.board[s.pendingPromo.piece];
+  addLog(s, "promo", [s.turn, type, at ? toSquare(at) : ""]);
   s.pendingPromo = null;
   afterStep(s);
   return true;

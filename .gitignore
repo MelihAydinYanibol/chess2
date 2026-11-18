@@ -1,3 +1,6 @@
 node_modules/
 games.json
 games.json.tmp
+data.json.gz
+data.json.gz.tmp
+replays/

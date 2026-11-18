@@ -264,7 +264,52 @@
     background: linear-gradient(100deg, transparent, rgba(255,255,255,.18), transparent); transform: rotate(18deg); pointer-events: none;
   }
   .gcard:hover { transform: translateY(-5px); }
-  .gcard.sel { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(0,0,0,.55); }
+  .gcard.sel { box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(0,0,0,.55); }
+  /* hands held like a fan: each card has its own tilt along an arc */
+  .hand-row { align-items: flex-end; overflow: visible; padding: 30px 4px 26px; }
+  .hand-row .gcard {
+    transform-origin: 50% 115%;
+    transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg));
+    margin-left: calc(var(--cw) * -.14);
+    transition: transform .22s cubic-bezier(.3,.7,.3,1.2), width .22s, height .22s, filter .22s, box-shadow .22s;
+  }
+  .hand-row .gcard:first-child { margin-left: 0; }
+  .hand-row .gcard:hover { transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg)); }
+  .hand-row.opp { padding: 18px 4px 22px; align-items: flex-start; }
+  .hand-row.opp .gcard { transform-origin: 50% -15%; }
+  /* your hand when it isn't your time to choose: smaller and muted */
+  #myHand .gcard { filter: saturate(.55) brightness(.8); }
+  /* your time to choose: a little bigger and vivid */
+  #myHand.active { --cw: clamp(64px, calc((var(--size) - 36px) / 7 * 1.12), 90px); }
+  #myHand.active .gcard { filter: saturate(1.35) brightness(1.08); }
+  #myHand.active .gcard.off { filter: saturate(.6) brightness(.82); }
+  /* the picked card (tapped on a phone, hovered with a mouse): green border, larger, nearly upright, Use button in the middle */
+  #myHand .gcard.sel {
+    transform: translateY(calc(var(--lift, 0px) - 34px)) rotate(calc(var(--rot, 0deg) * .25)) scale(1.24);
+    box-shadow: 0 0 0 3px #3fbf6a, 0 0 24px rgba(63,191,106,.8), 0 14px 28px rgba(0,0,0,.55);
+    filter: saturate(1.35) brightness(1.1);
+    z-index: 6;
+  }
+  .card-use { display: none; }
+  #myHand .gcard.sel .card-use { display: block; }
+  @media (hover: hover) and (pointer: fine) {
+    #myHand.active .gcard:not(.off):hover {
+      transform: translateY(calc(var(--lift, 0px) - 34px)) rotate(calc(var(--rot, 0deg) * .25)) scale(1.24);
+      box-shadow: 0 0 0 3px #3fbf6a, 0 0 24px rgba(63,191,106,.8), 0 14px 28px rgba(0,0,0,.55);
+      filter: saturate(1.35) brightness(1.1);
+      z-index: 6;
+    }
+    #myHand.active .gcard:not(.off):hover .card-use { display: block; }
+  }
+  .card-use {
+    position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); z-index: 4;
+    padding: calc(var(--cw) * .06) calc(var(--cw) * .14); font-size: calc(var(--cw) * .15); font-weight: 800;
+    background: #3fbf6a; color: #0d1a12; border: 2px solid #c8ffd9; border-radius: 999px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.55), 0 0 14px rgba(63,191,106,.8);
+    animation: usePop .22s cubic-bezier(.3,.7,.3,1.5);
+  }
+  .card-use:hover { background: #4fd27b; }
+  @keyframes usePop { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } }
   .gcard.off { opacity: .55; }
   .gcard .cname { font-size: calc(var(--cw) * .105); overflow-wrap: anywhere; max-width: 100%; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; text-align: center; line-height: 1.08; min-height: 2.2em; display: flex; align-items: center; justify-content: center; text-shadow: 0 1px 2px rgba(0,0,0,.45); z-index: 1; }
   .gcard .art { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 1; }
@@ -1259,15 +1304,21 @@ Object.assign(ART, {
   mycall: `<rect x="22" y="10" width="26" height="14" rx="4" fill="currentColor" transform="rotate(-30 35 17)"/><path d="M30 26L14 50" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><rect x="34" y="48" width="24" height="7" rx="3" fill="currentColor"/><path d="M46 40l2-6M54 44l5-3M40 42l-2-6" stroke="#ffd1ea" stroke-width="3" stroke-linecap="round"/>`,
   rewind: `<circle cx="32" cy="34" r="22" fill="none" stroke="currentColor" stroke-width="5"/><path d="M32 20v14l-9 6" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 18l4 10 10-3" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="34" r="3" fill="#fff0d8"/>`,
 });
-function cardFace(c, extra = "", attrs = "") {
+function cardFace(c, extra = "", attrs = "", inner = "") {
   const lv = LEVELED.has(c.t) ? ["I", "II", "III", "IV"][c.l - 1] : "★";
   return `<div class="gcard k-${c.t} ${extra}" ${attrs} title="${esc(cardName(c.t, c.l))}">
     <div class="cname">${esc(L().cards[c.t])}</div>
     <div class="art"><div class="disc"><svg viewBox="0 0 64 64">${ART[c.t]}</svg></div></div>
-    <div class="foot"><span class="lv">${lv}</span><span class="tag">${esc(L().cardTag[c.t](c.l))}</span></div>
+    <div class="foot"><span class="lv">${lv}</span><span class="tag">${esc(L().cardTag[c.t](c.l))}</span></div>${inner}
   </div>`;
 }
-function cardBack() { return `<div class="gcard back" title="${esc(tx("cardBack"))}"><span class="emblem">♞${VS}</span></div>`; }
+function cardBack(attrs = "") { return `<div class="gcard back" ${attrs} title="${esc(tx("cardBack"))}"><span class="emblem">♞${VS}</span></div>`; }
+// tilt and height of card i of n, so a hand looks like a fan held in someone's fingers
+function fanStyle(i, n, flip) {
+  const spread = Math.min(9, 44 / Math.max(1, n - 1)), off = i - (n - 1) / 2;
+  const rot = off * spread, lift = off * off * spread * .32;
+  return `style="--rot:${(flip ? -rot : rot).toFixed(1)}deg;--lift:${(flip ? -lift : lift).toFixed(1)}px"`;
+}
 
 let selCard = null;   // index of the card picked in the viewer's hand
 
@@ -1282,12 +1333,19 @@ function renderHands() {
   document.getElementById("oppLabel").innerHTML = `<span class="swatch ${top}"></span>${esc(tx("handLabel", who(top), topHand.length))}`;
   document.getElementById("myLabel").innerHTML = `<span class="swatch ${bottom}"></span>${esc(tx("handLabel", who(bottom), botHand.length))}`;
   document.getElementById("oppHand").innerHTML = !topHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
-    : topHand.map(c => mode === "replay" && c ? cardFace(c, "off") : cardBack()).join("");
+    : topHand.map((c, i) => mode === "replay" && c ? cardFace(c, "off", fanStyle(i, topHand.length, true)) : cardBack(fanStyle(i, topHand.length, true))).join("");
   if (selCard !== null && !botHand[selCard]) selCard = null;
   const playable = c => mover && !rolling && bottom === S.turn && G.canPlay(S, c);
-  document.getElementById("myHand").innerHTML = !botHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
-    : showFaces ? botHand.map((c, i) => cardFace(c, (selCard === i || (targeting && targeting.idx === i) ? "sel" : "") + (c && playable(c) ? "" : " off"), `data-card="${i}"`)).join("")
-    : botHand.map(() => cardBack()).join("");
+  const myHandEl = document.getElementById("myHand");
+  // "your time to choose": it's your turn and at least one card can be played
+  myHandEl.classList.toggle("active", showFaces && botHand.some(c => c && playable(c)));
+  myHandEl.innerHTML = !botHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
+    : showFaces ? botHand.map((c, i) => {
+        const sel = selCard === i || (targeting && targeting.idx === i);
+        const btn = !targeting && playable(c) ? `<button class="card-use" data-use="${i}">${esc(tx("use"))}</button>` : "";
+        return cardFace(c, (sel ? "sel" : "") + (c && playable(c) ? "" : " off"), `data-card="${i}" ${fanStyle(i, botHand.length)}`, btn);
+      }).join("")
+    : botHand.map((c, i) => cardBack(fanStyle(i, botHand.length))).join("");
 
   // info strip: what the picked card does, Use / Cancel, End turn after a capture
   const info = document.getElementById("cardInfo");
@@ -1300,7 +1358,7 @@ function renderHands() {
     btns = `<button id="cancelTarget">${esc(tx("cancel"))}</button>`;
   } else if (picked) {
     txt = `<b>${esc(cardName(picked.t, picked.l))}</b>${esc(L().cardDesc[picked.t](picked.l))}`;
-    btns = (mover ? `<button class="primary" id="useCard" ${usable ? "" : "disabled"}>${esc(tx("use"))}</button>` : "") + `<button id="closeCard">${esc(tx("close"))}</button>`;
+    btns = `<button id="closeCard">${esc(tx("close"))}</button>`;
     if (mover && !usable) txt += `<br><span style="color:var(--red)">${esc(tx("msgNoCardNow"))}</span>`;
   } else if (showFaces && botHand.length) txt = esc(tx("pickCard"));
   else txt = esc(tx("noCards"));
@@ -2464,6 +2522,8 @@ function runFx(quiet) {
 const on = (id, ev, fn) => document.getElementById(id).addEventListener(ev, fn);
 on("board", "click", e => { const sq = e.target.closest(".sq"); if (sq) clickSquare(+sq.dataset.r, +sq.dataset.c); });
 on("myHand", "click", e => {
+  const use = e.target.closest(".card-use");
+  if (use) { selCard = null; onUseCard(+use.dataset.use); return; }
   const c = e.target.closest("[data-card]");
   if (!c) return;
   const i = +c.dataset.card;
@@ -2472,6 +2532,13 @@ on("myHand", "click", e => {
   Sound.play("click");
   render();
 });
+on("myHand", "mouseover", e => {
+  const c = e.target.closest("[data-card]"), txt = document.querySelector("#cardInfo .txt");
+  if (!c || !txt || selCard !== null || targeting) return;
+  const card = S.hands[viewer()] && S.hands[viewer()][+c.dataset.card];
+  if (card) txt.innerHTML = `<b>${esc(cardName(card.t, card.l))}</b>${esc(L().cardDesc[card.t](card.l))}`;
+});
+on("myHand", "mouseleave", () => { if (selCard === null && !targeting) renderHands(); });
 on("cardInfo", "click", e => {
   const b = e.target.closest("button");
   if (!b) return;

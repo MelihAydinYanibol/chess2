@@ -307,6 +307,32 @@
   .shop-points { font-size: 22px; font-weight: 700; color: var(--gold); }
   .discard-list .gcard { --cw: 76px; }
   .discard-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* ---------- animations ---------- */
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
+  .fx { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); will-change: transform, opacity; }
+  .fx-card { --cw: 74px; }
+  .fx-card .gcard { box-shadow: 0 0 0 2px rgba(255,255,255,.5), 0 0 28px 6px var(--glow, rgba(255,255,255,.4)), 0 10px 24px rgba(0,0,0,.5); }
+  .fx-card .gcard:hover { transform: none; }
+  .fx-card.k-barricade { --glow: rgba(77,147,238,.85); }
+  .fx-card.k-abra { --glow: rgba(176,114,242,.9); }
+  .fx-card.k-mine { --glow: rgba(242,105,79,.9); }
+  .fx-card.k-reborn { --glow: rgba(69,217,138,.9); }
+  .fx-card.k-nomad { --glow: rgba(246,211,107,.95); }
+  .fx-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .fx-star { font-size: 18px; line-height: 1; text-shadow: 0 0 6px currentColor; }
+  .fx-ring { border-radius: 50%; border: 4px solid currentColor; }
+  .fx-bar { width: 12%; border-radius: 3px; background: linear-gradient(90deg, #8fc2ff, #2f6fd0 60%, #1b3f7a); box-shadow: 0 0 8px rgba(77,147,238,.9); }
+  .fx-lock { color: #e8f2ff; filter: drop-shadow(0 0 8px #4d93ee); }
+  .fx-boom { border-radius: 50%; background: radial-gradient(circle, #fff6c2 0%, #ffb02e 30%, #ff4d1f 55%, rgba(120,20,0,0) 72%); }
+  .fx-wash { position: absolute; transform: none; border-radius: 8px; }
+  .fx-pillar { border-radius: 40% 40% 8px 8px; background: linear-gradient(to top, rgba(69,217,138,.95), rgba(69,217,138,.45) 60%, rgba(200,255,220,0)); filter: blur(1px); transform-origin: 50% 100%; }
+  .fx-banner { font-size: 30px; font-weight: 800; color: var(--gold); background: rgba(20,22,28,.92); padding: 14px 26px; border-radius: 14px; box-shadow: 0 0 0 2px rgba(242,201,76,.6), 0 12px 30px rgba(0,0,0,.5); white-space: nowrap; }
+  .fx-smoke { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, rgba(255,140,120,.8), rgba(90,30,30,0) 70%); }
+  .board.fx-shake { animation: fxShake .45s; }
+  @keyframes fxShake { 0%,100% { transform: none; } 20% { transform: translate(-6px, 3px); } 40% { transform: translate(5px, -4px); } 60% { transform: translate(-4px, -2px); } 80% { transform: translate(3px, 3px); } }
+  .board.fx-magic .piece { animation: fxWobble .9s ease-in-out; }
+  @keyframes fxWobble { 0%,100% { transform: none; filter: none; } 30% { transform: rotate(-12deg) scale(1.12); filter: hue-rotate(120deg) brightness(1.3); } 60% { transform: rotate(10deg) scale(.92); filter: hue-rotate(250deg) brightness(1.2); } }
+  @media (prefers-reduced-motion: reduce) { #fx { display: none; } }
   .top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .lang-btn { padding: 6px 12px; font-size: 13px; }
   .sq.locked::after {
@@ -416,6 +442,8 @@
     <button id="newGame"></button>
   </div>
 </div>
+
+<div id="fx"></div>
 
 <div class="overlay" id="promo">
   <div class="box">
@@ -566,6 +594,7 @@ function restart() {
   overDismissed = false; flash = null; targeting = null;
   publish(true);
   render();
+  runFx(true);
 }
 
 // ---------- syncing (WebSocket to your server) ----------
@@ -576,6 +605,7 @@ function commit() {
   if (targeting && !G.canUseCard(S)) targeting = null;
   publish(false);
   render();
+  runFx();
 }
 function publish(isRestart) {
   if (mode === "online" && myRole !== "spectator") send({ type: "state", state: S, restart: !!isRestart });
@@ -623,6 +653,7 @@ function handleServer(m) {
     S = m.state;
     overDismissed = false; targeting = null;
     if (location.hash !== "#play-" + m.code) location.hash = "play-" + m.code;
+    render(); runFx(true); return;
   } else if (m.type === "state") {
     if (!G.valid(m.state) || rolling) return;
     if (m.state.seq <= S.seq && !m.force) return;
@@ -631,6 +662,7 @@ function handleServer(m) {
     if (!S.over || !wasOver) overDismissed = false;
     flash = null;
     if (targeting && !(myTurn() && G.canUseCard(S))) targeting = null;
+    render(); runFx(); return;
   } else if (m.type === "peers") {
     opponentHere = myRole === "w" ? !!m.b : myRole === "b" ? !!m.w : !!(m.w && m.b);
   } else if (m.type === "error") {
@@ -999,6 +1031,308 @@ function renderOnline() {
   };
 }
 
+// ---------- animations ----------
+// Every log entry has a running number (n). After each new state, entries we haven't animated yet are
+// played in order, on this device and on the opponent's. Animations never block the game.
+const FXL = document.getElementById("fx");
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+let fxSeen = 0, fxChain = Promise.resolve();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const T = (x, y, extra = "") => `translate(-50%, -50%) translate(${x}px, ${y}px) ${extra}`;
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+function fxNode(html, cls, x, y, style = "") {
+  const d = document.createElement("div");
+  d.className = "fx " + cls;
+  d.style.cssText = style;
+  d.innerHTML = html;
+  d.style.transform = T(x, y);
+  FXL.appendChild(d);
+  return d;
+}
+function play(node, frames, opts) {
+  const a = node.animate(frames, { fill: "forwards", easing: "ease-out", ...opts });
+  return a.finished.catch(() => {}).then(() => node);
+}
+const remove = n => n && n.remove();
+function center(el) { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; }
+function sqPos(name) {
+  const c = FILES.indexOf(name[0]), r = 8 - +name.slice(1);
+  const el = document.querySelector(`.sq[data-r="${r}"][data-c="${c}"]`);
+  return el ? center(el) : boardPos();
+}
+function boardPos() { return center(document.getElementById("board")); }
+function bottomColor() { const v = viewer(); return isPlayer(v) ? v : (mode === "online" ? "w" : S.turn); }
+function handPos(col) { return center(document.getElementById(col === bottomColor() ? "myHand" : "oppHand")); }
+function shopPos() { return center(document.getElementById("shopPanel")); }
+function canSeeCard(col) { const v = viewer(); return !isPlayer(v) || v === col; }
+function flyCard(card, hidden) {
+  const cls = "fx-card" + (hidden ? "" : " k-" + card.t);
+  return fxNode(hidden ? cardBack() : cardFace(card), cls, 0, 0);
+}
+function particles(n, x, y, make, spread, ms) {
+  const all = [];
+  for (let i = 0; i < n; i++) {
+    const ang = rnd(0, Math.PI * 2), dist = rnd(spread * .4, spread);
+    const p = make(i);
+    p.style.transform = T(x, y);
+    all.push(play(p, [
+      { transform: T(x, y, "scale(.4)"), opacity: 1 },
+      { transform: T(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist, `scale(${rnd(.6, 1.3)}) rotate(${rnd(-200, 200)}deg)`), opacity: 0 },
+    ], { duration: ms * rnd(.7, 1.1), easing: "cubic-bezier(.2,.7,.3,1)" }).then(remove));
+  }
+  return Promise.all(all);
+}
+const dot = color => () => fxNode("", "fx-dot", 0, 0, `background:${color};box-shadow:0 0 8px ${color}`);
+const star = (chars, colors) => () => fxNode(rand(chars), "fx-star", 0, 0, `color:${rand(colors)}`);
+function boardFlash(color, ms = 700) {
+  const b = document.getElementById("board").getBoundingClientRect();
+  const w = fxNode("", "fx-wash", 0, 0, `left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px;background:radial-gradient(circle, ${color}, transparent 75%)`);
+  w.style.transform = "none";
+  return play(w, [{ opacity: 0 }, { opacity: 1, offset: .35 }, { opacity: 0 }], { duration: ms }).then(remove);
+}
+function boardClass(cls, ms) {
+  const b = document.getElementById("board");
+  b.classList.remove(cls); void b.offsetWidth; b.classList.add(cls);
+  setTimeout(() => b.classList.remove(cls), ms);
+}
+
+// --- getting a card: each kind arrives its own way, then flies into its owner's hand ---
+async function fxGot(col, card, why) {
+  const hidden = !canSeeCard(col);
+  const from = why === "bought" ? shopPos() : boardPos(), to = handPos(col);
+  const n = flyCard(card, hidden);
+  const { x, y } = from;
+  const entrance = hidden ? [
+    { transform: T(x, y, "scale(.2) rotateY(180deg)"), opacity: 0 },
+    { transform: T(x, y, "scale(1) rotateY(0)"), opacity: 1 },
+  ] : {
+    barricade: [ // drops in from above with a heavy thud
+      { transform: T(x, y - 220, "scale(1.1)"), opacity: 0 },
+      { transform: T(x, y + 8, "scale(1.15, .9)"), opacity: 1, offset: .7 },
+      { transform: T(x, y, "scale(1)"), opacity: 1 },
+    ],
+    abra: [ // spirals in like a spell
+      { transform: T(x - 120, y + 60, "scale(.1) rotate(-540deg)"), opacity: 0 },
+      { transform: T(x, y, "scale(1.1) rotate(10deg)"), opacity: 1, offset: .8 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+    mine: [ // pops up and rattles
+      { transform: T(x, y, "scale(0)"), opacity: 0 },
+      { transform: T(x, y, "scale(1.25)"), opacity: 1, offset: .45 },
+      { transform: T(x - 6, y, "scale(1) rotate(-6deg)"), offset: .6 },
+      { transform: T(x + 6, y, "scale(1) rotate(6deg)"), offset: .75 },
+      { transform: T(x, y, "scale(1)"), opacity: 1 },
+    ],
+    reborn: [ // rises from below, glowing
+      { transform: T(x, y + 160, "scale(.8)"), opacity: 0, filter: "brightness(2.5) blur(6px)" },
+      { transform: T(x, y, "scale(1)"), opacity: 1, filter: "brightness(1) blur(0)" },
+    ],
+    nomad: [ // rolls in sideways like a wheel
+      { transform: T(x - 260, y, "scale(.8) rotate(-720deg)"), opacity: 0 },
+      { transform: T(x, y, "scale(1) rotate(0)"), opacity: 1 },
+    ],
+  }[card.t];
+  if (!hidden && card.t === "abra") particles(10, x, y, star(["✦", "✧", "★"], ["#d9b3ff", "#ffe27a"]), 90, 700);
+  if (!hidden && card.t === "reborn") particles(8, x, y + 40, dot("#7dffb5"), 70, 800);
+  await play(n, entrance, { duration: 650, easing: "cubic-bezier(.2,.8,.3,1)" });
+  await sleep(220);
+  await play(n, [
+    { transform: T(x, y, "scale(1)"), opacity: 1 },
+    { transform: T(to.x, to.y, "scale(.7)"), opacity: .2 },
+  ], { duration: 420, easing: "ease-in" });
+  remove(n);
+}
+
+// card leaves its owner's hand and travels to (x, y)
+async function cardTo(col, card, x, y, ms = 480, endScale = .9) {
+  const from = handPos(col), n = flyCard(card, false);
+  await play(n, [
+    { transform: T(from.x, from.y, "scale(.8)"), opacity: .4 },
+    { transform: T(x, y, `scale(${endScale})`), opacity: 1 },
+  ], { duration: ms, easing: "cubic-bezier(.3,.7,.3,1)" });
+  return n;
+}
+
+async function fxBarricade(col, l, sqName) {
+  const p = sqPos(sqName), card = { t: "barricade", l };
+  const n = await cardTo(col, card, p.x, p.y - 30);
+  await play(n, [{ transform: T(p.x, p.y - 30, "scale(.9)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(.2)"), opacity: 0 }], { duration: 220, easing: "ease-in" });
+  remove(n);
+  // iron bars slam down onto the square, then a lock snaps shut
+  const bars = [-0.3, 0, 0.3].map((f, i) => {
+    const b = fxNode("", "fx-bar", 0, 0, `height:${p.h * .95}px;width:${p.w * .14}px`);
+    return play(b, [
+      { transform: T(p.x + f * p.w, p.y - p.h * 2), opacity: 0 },
+      { transform: T(p.x + f * p.w, p.y + 4), opacity: 1, offset: .75 },
+      { transform: T(p.x + f * p.w, p.y), opacity: 1 },
+    ], { duration: 360, delay: i * 90, easing: "cubic-bezier(.5,0,.7,1.4)" });
+  });
+  const done = await Promise.all(bars);
+  boardClass("fx-shake", 300);
+  const lock = fxNode(`<svg viewBox="0 0 64 64" width="${p.w * .7}" height="${p.w * .7}">${ART.barricade}</svg>`, "fx-lock", p.x, p.y);
+  await play(lock, [
+    { transform: T(p.x, p.y, "scale(0)"), opacity: 0 },
+    { transform: T(p.x, p.y, "scale(1.35)"), opacity: 1, offset: .5 },
+    { transform: T(p.x, p.y, "scale(1)"), opacity: 1 },
+  ], { duration: 380 });
+  await sleep(350);
+  await Promise.all([lock, ...done].map(x => play(x, [{ opacity: 1 }, { opacity: 0 }], { duration: 300 })));
+  [lock, ...done].forEach(remove);
+}
+
+async function fxAbra(col, l) {
+  const b = boardPos(), card = { t: "abra", l };
+  const n = await cardTo(col, card, b.x, b.y, 500, 1.1);
+  // the card spins faster and faster, then bursts into stars and the pieces shimmer
+  await play(n, [
+    { transform: T(b.x, b.y, "scale(1.1) rotateY(0)"), filter: "brightness(1)" },
+    { transform: T(b.x, b.y, "scale(1.6) rotateY(1080deg)"), filter: "brightness(2.2)" },
+  ], { duration: 700, easing: "ease-in" });
+  remove(n);
+  boardFlash("rgba(176,114,242,.55)", 900);
+  boardClass("fx-magic", 900);
+  await particles(28, b.x, b.y, star(["✦", "✧", "★", "✶"], ["#d9b3ff", "#b072f2", "#ffe27a", "#fff"]), b.w * .55, 900);
+}
+
+async function fxMine(col, sqName) {
+  const mine = viewer() === col && isPlayer(col) && sqName;
+  if (mine) {
+    // the owner sees the mine being buried in its square
+    const p = sqPos(sqName);
+    const n = await cardTo(col, { t: "mine", l: 1 }, p.x, p.y - 20);
+    await play(n, [
+      { transform: T(p.x, p.y - 20, "scale(.9) rotate(0)"), opacity: 1 },
+      { transform: T(p.x, p.y, "scale(.25) rotate(540deg)"), opacity: .9, offset: .7 },
+      { transform: T(p.x, p.y + 6, "scale(.05) rotate(720deg)"), opacity: 0 },
+    ], { duration: 650, easing: "ease-in" });
+    remove(n);
+    const ring = fxNode("", "fx-ring", p.x, p.y, `width:${p.w * .9}px;height:${p.w * .9}px;color:#8a5a2b`);
+    particles(8, p.x, p.y, dot("#8a5a2b"), p.w * .7, 500);
+    await play(ring, [{ transform: T(p.x, p.y, "scale(.2)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(1.4)"), opacity: 0 }], { duration: 500 });
+    remove(ring);
+  } else {
+    // everyone else only sees it vanish into smoke: where it went stays secret
+    const b = boardPos(), from = handPos(col);
+    const n = flyCard({ t: "mine", l: 1 }, true);
+    await play(n, [{ transform: T(from.x, from.y, "scale(.8)"), opacity: .4 }, { transform: T(b.x, b.y, "scale(1)"), opacity: 1 }], { duration: 450 });
+    const q = fxNode("?", "fx-banner", b.x, b.y, "color:#ff7a6b;font-size:44px;padding:6px 20px");
+    play(q, [{ transform: T(b.x, b.y, "scale(.4)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1)"), opacity: 1, offset: .4 }, { transform: T(b.x, b.y - 30, "scale(1.1)"), opacity: 0 }], { duration: 1000 }).then(remove);
+    particles(14, b.x, b.y, () => fxNode("", "fx-smoke", 0, 0), 110, 1000);
+    await play(n, [{ opacity: 1, filter: "blur(0)" }, { opacity: 0, filter: "blur(10px)" }], { duration: 600 });
+    remove(n);
+  }
+}
+
+async function fxReborn(col) {
+  const b = boardPos(), card = { t: "reborn", l: 1 };
+  const n = await cardTo(col, card, b.x, b.y, 480, 1);
+  // the card fades into a green glow, and spirits rise from all over the board
+  await play(n, [{ transform: T(b.x, b.y, "scale(1)"), opacity: 1, filter: "brightness(1)" }, { transform: T(b.x, b.y - 60, "scale(1.3)"), opacity: 0, filter: "brightness(3) blur(8px)" }], { duration: 600 });
+  remove(n);
+  boardFlash("rgba(69,217,138,.45)", 1000);
+  const wisps = [];
+  for (let i = 0; i < 14; i++) {
+    const x = b.x + rnd(-b.w / 2, b.w / 2) * .9, y = b.y + rnd(-b.h / 2, b.h / 2) * .9;
+    const w = fxNode("", "fx-dot", x, y, "width:12px;height:18px;border-radius:50% 50% 40% 40%;background:#a6ffcc;box-shadow:0 0 12px #45d98a");
+    wisps.push(play(w, [
+      { transform: T(x, y, "scale(.3)"), opacity: 0 },
+      { transform: T(x + rnd(-10, 10), y - 30, "scale(1)"), opacity: 1, offset: .4 },
+      { transform: T(x + rnd(-20, 20), y - 90, "scale(.6)"), opacity: 0 },
+    ], { duration: 1100, delay: rnd(0, 400), easing: "ease-in-out" }).then(remove));
+  }
+  await Promise.all(wisps);
+}
+
+async function fxNomad(col, l) {
+  const b = boardPos(), card = { t: "nomad", l };
+  const n = await cardTo(col, card, b.x, b.y, 480, 1.05);
+  // the compass card spins like a needle finding north, with golden rays
+  const rays = fxNode("", "fx-ring", b.x, b.y, `width:170px;height:170px;border:none;background:repeating-conic-gradient(rgba(246,211,107,.55) 0 8deg, transparent 8deg 24deg)`);
+  play(rays, [{ transform: T(b.x, b.y, "scale(.3) rotate(0)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1.2) rotate(180deg)"), opacity: 1, offset: .5 }, { transform: T(b.x, b.y, "scale(1.6) rotate(360deg)"), opacity: 0 }], { duration: 1100 }).then(remove);
+  await play(n, [
+    { transform: T(b.x, b.y, "scale(1.05) rotate(0)") },
+    { transform: T(b.x, b.y, "scale(1.15) rotate(400deg)"), offset: .6 },
+    { transform: T(b.x, b.y, "scale(1.1) rotate(350deg)"), offset: .8 },
+    { transform: T(b.x, b.y, "scale(.2) rotate(360deg)"), opacity: 0 },
+  ], { duration: 1000, easing: "ease-in-out" });
+  remove(n);
+}
+
+async function fxBoom(sqName, big) {
+  const p = sqPos(sqName), size = p.w * (big ? 2.4 : 1.6);
+  const b = fxNode("", "fx-boom", p.x, p.y, `width:${size}px;height:${size}px`);
+  boardClass("fx-shake", 450);
+  particles(big ? 18 : 10, p.x, p.y, dot(rand(["#ffb02e", "#ff4d1f", "#fff2a8"])), size * .9, 700);
+  await play(b, [{ transform: T(p.x, p.y, "scale(.1)"), opacity: 1 }, { transform: T(p.x, p.y, "scale(1)"), opacity: .9, offset: .4 }, { transform: T(p.x, p.y, "scale(1.3)"), opacity: 0 }], { duration: 650 });
+  remove(b);
+}
+
+async function fxCopy(sqName, thenBoom) {
+  const p = sqPos(sqName);
+  const pil = fxNode("", "fx-pillar", p.x, p.y, `width:${p.w * .8}px;height:${p.h * 2.6}px`);
+  // the pillar grows up out of the square (anchored at its bottom)
+  const y = p.y - p.h * 1.3 + p.h * .5;
+  particles(10, p.x, p.y, dot("#a6ffcc"), p.w, 800);
+  await play(pil, [{ transform: T(p.x, y, "scaleY(0)"), opacity: 1 }, { transform: T(p.x, y, "scaleY(1)"), opacity: 1, offset: .45 }, { transform: T(p.x, y, "scaleY(1.1)"), opacity: 0 }], { duration: 900 });
+  remove(pil);
+  if (thenBoom) await fxBoom(sqName, false);
+}
+
+async function fxBanner(text) {
+  const b = boardPos();
+  const n = fxNode(esc(text), "fx-banner", b.x, b.y);
+  await play(n, [{ transform: T(b.x, b.y, "scale(.5)"), opacity: 0 }, { transform: T(b.x, b.y, "scale(1.05)"), opacity: 1, offset: .25 }, { transform: T(b.x, b.y, "scale(1)"), opacity: 1, offset: .8 }, { transform: T(b.x, b.y - 20, "scale(1)"), opacity: 0 }], { duration: 1100 });
+  remove(n);
+}
+
+async function fxDiscard(col, card) {
+  const hidden = !canSeeCard(col), p = handPos(col);
+  const n = flyCard(card, hidden);
+  // the card catches fire and crumbles away
+  particles(12, p.x, p.y - 20, dot(rand(["#ff8a3d", "#ffcf5c", "#7a3b1d"])), 70, 800);
+  await play(n, [
+    { transform: T(p.x, p.y - 40, "scale(1) rotate(0)"), opacity: 1, filter: "brightness(1) sepia(0)" },
+    { transform: T(p.x, p.y - 60, "scale(.95) rotate(-6deg)"), opacity: 1, filter: "brightness(1.6) sepia(1) saturate(3)", offset: .4 },
+    { transform: T(p.x, p.y - 90, "scale(.6) rotate(12deg)"), opacity: 0, filter: "brightness(.3) sepia(1) blur(3px)" },
+  ], { duration: 900 });
+  remove(n);
+}
+
+function fxFor(e) {
+  const a = e.a;
+  switch (e.k) {
+    case "got": return () => fxGot(a[0], { t: a[1], l: a[2] }, a[3]);
+    case "bought": return () => fxGot(a[0], { t: a[1], l: a[2] }, "bought");
+    case "discarded": return () => fxDiscard(a[0], { t: a[1], l: a[2] });
+    case "useBarricade": return () => fxBarricade(a[0], a[1], a[2]);
+    case "useAbra": return () => fxAbra(a[0], a[1]);
+    case "useMine": return () => fxMine(a[0], a[1]);
+    case "useReborn": return () => fxReborn(a[0]);
+    case "useNomad": return () => fxNomad(a[0], a[1]);
+    case "mineKill": return () => fxBoom(a[2], true);
+    case "kingMine": return () => fxBoom(a[1], false);
+    case "copyPlaced": return () => fxCopy(a[2], false);
+    case "copyMine": return () => fxCopy(a[2], true);
+    case "timedDraw": return () => fxBanner(tx("fxDraw"));
+  }
+  return null;
+}
+
+// called after every new state; `quiet` marks entries as seen without animating (joining, restarts)
+function runFx(quiet) {
+  if (!S || !S.log) return;
+  const last = S.log.length ? (S.log[S.log.length - 1].n || 0) : 0;
+  if (last < fxSeen) fxSeen = 0;          // a new game started
+  const fresh = S.log.filter(e => (e.n || 0) > fxSeen);
+  fxSeen = Math.max(fxSeen, last);
+  if (quiet || reduceMotion) return;
+  for (const e of fresh) {
+    const f = fxFor(e);
+    if (f) fxChain = fxChain.then(f).catch(err => console.error(err));
+  }
+}
+
 // ---------- setup ----------
 document.getElementById("board").addEventListener("click", e => {
   const sq = e.target.closest(".sq");
@@ -1055,6 +1389,7 @@ window.addEventListener("hashchange", readHash);
 applyStatic();
 S = G.freshState();
 render();
+runFx(true);
 readHash();
 </script>
 </body>

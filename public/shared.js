@@ -54,7 +54,7 @@ function squares(b) {
 }
 function optionsFor(p, s) { return isKing(p) ? s.kingOptions[p[0]] : s.rollLists[p[0]]; }
 function addLog(s, k, a = [], o) {
-  const e = { k, a };
+  const e = { k, a, n: (s.log.length ? (s.log[s.log.length - 1].n || 0) : 0) + 1 };  // n: running number, for animations
   if (o) e.o = o;            // owner: only they see the details (cards they got, mines they placed)
   s.log.push(e);
   if (s.log.length > LOG_MAX) s.log = s.log.slice(-LOG_MAX);
@@ -202,7 +202,7 @@ function useCard(s, idx, target) {
     addLog(s, "useAbra", [col, card.l]);
   } else if (card.t === "mine") {
     s.mines.push({ sq: target, by: col, at: s.ply });
-    addLog(s, "useMine", [col]);
+    addLog(s, "useMine", [col, toSquare(target)]);   // the square is only animated for the mine's owner
   } else if (card.t === "reborn") {
     const free = emptySquares(s).filter(q => !s.zones.some(z => samePos(z.sq, q)));
     if (free.length) s.zones.push({ sq: rand(free) });
@@ -443,7 +443,7 @@ function valid(s) {
   const isNat = n => Number.isInteger(n) && n >= 0 && n < 1e6;
   const isCard = c => c && CARD_KINDS.includes(c.t) && Number.isInteger(c.l) && c.l >= 1 && c.l <= MAX_LEVEL[c.t];
   const isMsg = m => m && typeof m.k === "string" && m.k.length < 40 && Array.isArray(m.a) && m.a.length < 10 &&
-    m.a.every(x => (typeof x === "string" && x.length < 300) || Number.isFinite(x)) && (m.o === undefined || isCol(m.o));
+    m.a.every(x => (typeof x === "string" && x.length < 300) || Number.isFinite(x)) && (m.o === undefined || isCol(m.o)) && (m.n === undefined || isNat(m.n));
   try {
     if (!s || typeof s !== "object" || !Number.isInteger(s.seq)) return false;
     if (!isCol(s.turn)) return false;

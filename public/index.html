@@ -307,6 +307,69 @@
   .shop-points { font-size: 22px; font-weight: 700; color: var(--gold); }
   .discard-list .gcard { --cw: 76px; }
   .discard-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* ---------- layout additions ---------- */
+  .left-col { width: 250px; display: flex; flex-direction: column; gap: 12px; }
+  .left-col .shop-panel { width: auto; }
+  @media (max-width: 1220px) { .left-col { order: 3; width: min(88vw, 340px); } }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; }
+  .toolbar .tool { padding: 7px 10px; font-size: 13px; }
+  .menu-btns { display: flex; flex-direction: column; gap: 8px; }
+  .menu-btns button { text-align: left; }
+  .vs-line { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .timers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .timers:empty { display: none; }
+  .timer { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; background: var(--panel-2); border-radius: 8px; padding: 5px 9px; }
+  .timer .swatch { width: 12px; height: 12px; border-width: 1px; }
+  .timer.active { outline: 2px solid var(--gold); }
+  .timer.low { color: var(--red); animation: pulseLow 1s infinite; }
+  .timer.sd { color: var(--gold); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  @keyframes pulseLow { 50% { opacity: .55; } }
+  .resign-btn { margin-top: 10px; width: 100%; padding: 7px; font-size: 13px; color: #ff9a9a; }
+  .me-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .small-btn { padding: 5px 10px; font-size: 12px; }
+  .plist { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+  .prow { display: flex; align-items: center; gap: 8px; font-size: 13px; background: var(--panel-2); border-radius: 8px; padding: 6px 8px; }
+  .prow .pn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+  .prow .pp { color: var(--gold); font-weight: 700; font-size: 12px; }
+  .prow .led { width: 8px; height: 8px; border-radius: 50%; background: #5c6170; flex-shrink: 0; }
+  .prow .led.on { background: var(--green); } .prow .led.wait { background: var(--gold); }
+  .modal .box { max-width: 440px; width: calc(100vw - 32px); text-align: left; max-height: 86vh; overflow-y: auto; }
+  .modal .box.big { max-width: 720px; }
+  .modal h2 { font-size: 22px; }
+  .set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid #2c303b; font-size: 14px; }
+  .set-row select { background: var(--bg); color: var(--text); border: 1px solid #3a3f4b; border-radius: 7px; padding: 6px 8px; font: inherit; font-size: 13px; }
+  .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: #3a3f4b; border-radius: 999px; transition: background .15s; cursor: pointer; }
+  .switch span::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  .switch input:checked + span { background: var(--green); }
+  .switch input:checked + span::after { transform: translateX(18px); }
+  .name-input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid #3a3f4b; border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 15px; }
+  .err { color: var(--red); font-size: 13px; min-height: 18px; margin-top: 6px; }
+  table.lb { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.lb th, table.lb td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #2c303b; }
+  table.lb th { color: var(--muted); font-size: 12px; font-weight: 600; }
+  table.lb tr.me td { color: var(--gold); }
+  .rulebook { font-size: 14px; line-height: 1.55; color: #cfd2da; }
+  .rulebook h2 { margin-top: 0; } .rulebook h3 { margin: 18px 0 6px; color: var(--text); }
+  .rulebook table { border-collapse: collapse; margin: 8px 0; font-size: 13px; }
+  .rulebook th, .rulebook td { border: 1px solid #343846; padding: 5px 9px; text-align: left; }
+  .rulebook ul { padding-left: 20px; }
+  .rb-card { display: inline-block; padding: 1px 8px; border-radius: 6px; font-weight: 700; font-size: 12px; color: #fff; }
+  .rb-card.k-barricade { background: #2f6fd0; } .rb-card.k-abra { background: #7b3fc4; } .rb-card.k-mine { background: #c2412f; }
+  .rb-card.k-reborn { background: #1f9a5b; } .rb-card.k-nomad { background: #b98a1c; color: #1e1300; }
+  .replay-btns { display: flex; gap: 6px; justify-content: space-between; }
+  .replay-btns button { flex: 1; padding: 8px 4px; }
+  #replaySlider { width: 100%; margin-top: 10px; accent-color: var(--gold); }
+  .zone-mark { position: absolute; inset: 14%; border-radius: 50%; z-index: 1; pointer-events: none; border: 3px dashed #45d98a; box-shadow: 0 0 10px #45d98a; }
+  body.no-cards .hand-zone, body.no-cards .card-info, body.no-cards .shop-panel { display: none; }
+  /* tutorial */
+  #tutorial { position: fixed; inset: 0; z-index: 40; display: none; }
+  #tutorial.show { display: block; }
+  #tutRing { position: fixed; border-radius: 12px; box-shadow: 0 0 0 4px var(--gold), 0 0 0 9999px rgba(0,0,0,.6); pointer-events: none; transition: all .25s; display: none; }
+  #tutCard { position: fixed; width: min(340px, calc(100vw - 20px)); background: var(--panel); border-radius: 12px; padding: 16px 18px; box-shadow: 0 0 0 2px rgba(242,201,76,.6), 0 16px 40px rgba(0,0,0,.6); }
+  #tutCard h3 { margin: 6px 0; font-size: 18px; }
+  #tutCard p { margin: 0; color: #cfd2da; font-size: 14px; line-height: 1.45; }
   /* ---------- animations ---------- */
   #fx { position: fixed; inset: 0; pointer-events: none; z-index: 30; overflow: hidden; }
   .fx { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); will-change: transform, opacity; }
@@ -370,10 +433,15 @@
 </style>
 <script src="i18n.js"></script>
 <script src="shared.js"></script>
+<script src="sound.js"></script>
+<script src="rulebook.js"></script>
 </head>
 <body>
 <div class="app">
-  <div class="card shop-panel" id="shopPanel"></div>
+  <div class="left-col">
+    <div class="card shop-panel" id="shopPanel"></div>
+    <div class="card" id="onlineCard"></div>
+  </div>
 
   <div class="board-col">
     <div class="hand-zone">
@@ -393,11 +461,16 @@
   </div>
 
   <div class="panel">
-    <div class="card" id="onlineCard"></div>
-    <div class="card">
+    <div class="card toolbar" id="toolbar"></div>
+    <div class="card" id="turnCard">
       <div class="turn"><span class="swatch" id="turnSwatch"></span><span id="turnText"></span></div>
+      <div class="vs-line" id="vsLine"></div>
+      <div class="timers" id="timers"></div>
       <div class="msg" id="msg"></div>
+      <button class="resign-btn" id="resignBtn"></button>
     </div>
+    <div class="card" id="replayBar" style="display:none"></div>
+    <div class="card" id="menuCard"></div>
 
     <div class="card">
       <div class="label" data-t="roll"></div>
@@ -439,10 +512,48 @@
       </details>
     </div>
 
-    <button id="newGame"></button>
   </div>
 </div>
 
+
+<div class="overlay modal" id="settingsModal">
+  <div class="box">
+    <h2 id="settingsTitle"></h2>
+    <div id="settingsBody"></div>
+    <div class="row-btns"><button id="settingsCancel" data-t="cancel"></button><button id="settingsGo" class="primary"></button></div>
+  </div>
+</div>
+<div class="overlay modal" id="nameModal">
+  <div class="box">
+    <h2 data-t="nameTitle"></h2>
+    <p class="small" data-t="nameText"></p>
+    <input id="nameInput" class="name-input" maxlength="20" autocomplete="nickname">
+    <div class="err" id="nameError"></div>
+    <div class="row-btns"><button id="nameCancel" data-t="cancel"></button><button id="nameSave" class="primary" data-t="nameSave"></button></div>
+  </div>
+</div>
+<div class="overlay modal" id="inviteModal">
+  <div class="box" style="text-align:center">
+    <h2 data-t="inviteTitle"></h2>
+    <p id="inviteText"></p>
+    <p class="small" id="inviteCfg"></p>
+    <div class="row-btns"><button id="inviteDecline" data-t="decline"></button><button id="inviteAccept" class="primary" data-t="acceptPlay"></button></div>
+  </div>
+</div>
+<div class="overlay modal" id="lbModal">
+  <div class="box">
+    <h2>🏆 <span data-t="leaderboard"></span></h2>
+    <div id="lbBody"></div>
+    <div class="row-btns"><button id="lbClose" data-t="close"></button></div>
+  </div>
+</div>
+<div class="overlay modal" id="rulebookModal">
+  <div class="box big">
+    <div class="rulebook" id="rulebookBody"></div>
+    <div class="row-btns"><button id="rulebookClose" data-t="close"></button></div>
+  </div>
+</div>
+<div id="tutorial"><div id="tutRing"></div><div id="tutCard"></div></div>
 <div id="fx"></div>
 
 <div class="overlay" id="promo">
@@ -466,6 +577,8 @@
     <h2 id="overTitle"></h2>
     <p id="overText"></p>
     <div class="row-btns"><button id="overClose" data-t="seeBoard"></button><button id="overNew" class="primary" data-t="playAgain"></button></div>
+    <div class="row-btns"><button id="overReplay"></button></div>
+    <input id="overLink" class="name-input" readonly style="display:none;margin-top:10px;font-size:12px">
   </div>
 </div>
 
@@ -475,67 +588,103 @@ const { TYPES, PROMO_TYPES, FILES, key, other, toSquare, isKing, rand, samePos, 
 const GLYPH = { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" };
 const VS = "︎"; // force text style so the pawn isn't drawn as an emoji
 const LEVELED = new Set(["barricade", "abra", "nomad"]);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
 
 // ---------- language ----------
-let lang = "en";
-try { lang = localStorage.getItem("rc-lang") || ((navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en"); } catch (e) {}
+let lang = store.get("rc-lang", (navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en");
 if (!LANGS[lang]) lang = "en";
 const L = () => LANGS[lang];
-const tx = (k, ...a) => { const v = L()[k]; return typeof v === "function" ? v(...a) : v; };
+const tx = (k, ...a) => { const v = L()[k]; return typeof v === "function" ? v(...a) : v === undefined ? k : v; };
 const colName = c => L().colors[c] || c;
 const typName = t => L().types[t] || t;
-const cardName = (t, l) => L().cards[t] + (LEVELED.has(t) ? L().lvl(l) : "");
+const cardName = (t, l) => (L().cards[t] || "?") + (LEVELED.has(t) ? L().lvl(l) : "");
 // turn raw log/note arguments into words: "w" -> White, "rook" -> rook
 const word = x => x === "w" || x === "b" ? colName(x) : TYPES.includes(x) ? typName(x) : x;
 
 // ---------- state ----------
 let S;
-let mode = "local";        // "local" (hot-seat) or "online"
-let gameCode = null;
-let myRole = null;         // "w", "b" or "spectator" when online
-let rotateLocal = true;
-try { rotateLocal = localStorage.getItem("rc-rotate") !== "0"; } catch (e) {}
-let connected = false, opponentHere = false, onlineError = "";
-let rolling = false, flash = null, overDismissed = false, restartArmed = null;
-let targeting = null;      // { idx } while picking a square for a card
+let mode = "local";          // "local" (two players here), "bot", "online" or "replay"
+let botColor = "b";
+let gameCode = null, myRole = null, seatNames = { w: "", b: "" }, gameStarted = true, replayId = null, invitedName = "";
+let localCfg = G.normCfg((() => { try { return JSON.parse(store.get("rc-cfg", "{}")); } catch (e) { return {}; } })());
+let rotateLocal = store.get("rc-rotate", "1") !== "0";
+let rolling = false, flash = null, overDismissed = false, resignArmed = null;
+let targeting = null;        // { idx } while picking a square for a card
+let localRecord = null;      // record of a game played in this browser (for "Share replay")
+let replay = null;           // { rec, i, timer } while watching a replay
+let lastRollN = 0, botTimer = null;
+// server connection
+const serverOk = /^https?:$/.test(location.protocol);
+let ws = null, connected = false, me = null, needName = false, lobby = { players: [], games: [] }, leaderRows = [], clockSkew = 0, pendingJoin = null;
 
-// who is looking at the screen (hot-seat: whoever is moving)
-function viewer() { return mode === "online" ? myRole : S.turn; }
+function viewer() {
+  if (mode === "online") return myRole;
+  if (mode === "bot") return other(botColor);
+  if (mode === "replay") return null;
+  return S.turn;
+}
 function isPlayer(v) { return v === "w" || v === "b"; }
-function myTurn() { return !S.over && (mode === "local" || myRole === S.turn); }
+function myTurn() {
+  if (!S || S.over) return false;
+  if (mode === "local") return true;
+  if (mode === "bot") return S.turn !== botColor;
+  if (mode === "online") return myRole === S.turn && gameStarted;
+  return false;
+}
 // Abracadabra on the viewer: their own pieces look like one type, and the log is hidden
-function disguiseOnViewer() { const v = viewer(); return isPlayer(v) ? S.disguise[v] : null; }
+function disguiseOnViewer() { const v = viewer(); return isPlayer(v) && S.disguise ? S.disguise[v] : null; }
 function pieceName(p) {
   const d = disguiseOnViewer();
   return colName(p[0]) + " " + (d && p[0] === viewer() ? L().piece : typName(realType(p)));
 }
 function turnsLeft(until) { return Math.max(1, Math.ceil((until - S.ply) / 2)); }
+function sideName(col) {
+  if (mode === "online") return seatNames[col] || tx("waitingSeat");
+  if (mode === "bot") return col === botColor ? tx("computer") : (me ? me.name : tx("you"));
+  if (mode === "replay") return (replay && replay.rec.names && replay.rec.names[col]) || "";
+  return "";
+}
 
-// ---------- actions (each changes S, then commit() shares it) ----------
+// ---------- actions ----------
+// Every action goes through Game.applyAction: here for games in this browser, on the server for online games.
+function doAction(act) {
+  if (mode === "replay") return;
+  if (mode === "online") { send({ type: "act", act }); return; }
+  const res = G.applyAction(S, S.turn, act);
+  if (!res.ok) { flashMsg(tx(res.err), true); return; }
+  S.seq++;
+  onNewState();
+}
+
 function clickSquare(r, c) {
-  if (S.over) return;
-  if (mode === "online" && myRole !== S.turn) {
-    flashMsg(myRole === "spectator" ? tx("msgWatch") : tx("msgWait", colName(S.turn)), true);
+  if (mode === "replay" || S.over) return;
+  if (!myTurn()) {
+    if (mode === "bot") flashMsg(tx("botThinking"));
+    else if (mode === "online" && !gameStarted) flashMsg(tx("msgWaitOpp"), true);
+    else flashMsg(myRole === "spectator" ? tx("msgWatch") : tx("msgWait", colName(S.turn)), true);
     return;
   }
   if (rolling) return;
   if (S.hands[S.turn].length > G.HAND_MAX) { flashMsg(tx("msgDiscard"), true); return; }
   if (targeting) {
     const card = S.hands[S.turn][targeting.idx];
-    if (card && G.validTarget(S, card, [r, c])) { const i = targeting.idx; targeting = null; G.useCard(S, i, [r, c]); commit(); }
+    if (card && G.validTarget(S, card, [r, c])) { const idx = targeting.idx; targeting = null; doAction({ kind: "card", idx, sq: [r, c] }); }
     else flashMsg(tx("msgBadTarget"), true);
     return;
   }
   if (S.pendingCopy) {
-    if (G.placeCopy(S, [r, c])) commit();
+    if (S.pendingCopy.squares.some(q => samePos(q, [r, c]))) doAction({ kind: "copy", sq: [r, c] });
     else flashMsg(tx("msgCopy", typName(S.pendingCopy.type)), true);
     return;
   }
   if (S.pendingPromo) { flashMsg(tx("msgPromo"), true); return; }
   if (S.postCard) { flashMsg(tx("msgPost"), true); return; }
   if (S.locked) {
-    if (G.makeMove(S, r, c)) return commit();
-    flashMsg(tx("msgMustMove", typName(S.locked.roll)), true);
+    if (S.locked.moves.some(m => samePos(m, [r, c]))) doAction({ kind: "move", sq: [r, c] });
+    else flashMsg(tx("msgMustMove", typName(S.locked.roll)), true);
     return;
   }
   const p = squares(S.board)[key(r, c)];
@@ -543,16 +692,7 @@ function clickSquare(r, c) {
   if (p[0] !== S.turn) { flashMsg(tx("msgWrongColor", colName(p[0]), colName(S.turn)), true); return; }
   if (G.isFrozen(S, p)) { flashMsg(tx("msgFrozen"), true); return; }
   if (S.deadRolls[p]) { flashMsg(tx("msgDead", typName(S.deadRolls[p])), true); return; }
-
-  const roll = rand(optionsFor(p, S));
-  const game = S;
-  animateRoll(roll, () => {
-    if (S !== game) return; // a restart, leave or new online game happened mid-roll
-    const name = pieceName(p);
-    const result = G.resolveRoll(S, p, roll);
-    commit();
-    if (result === "dead") flashMsg(tx("msgCantMove", name, typName(roll)), true);
-  });
+  doAction({ kind: "roll", sq: [r, c] });
 }
 
 function onUseCard(idx) {
@@ -561,144 +701,184 @@ function onUseCard(idx) {
   const card = S.hands[S.turn][idx];
   if (!card) return;
   if (G.cardTarget(card)) { targeting = { idx }; render(); flashMsg(tx("msgTarget", cardName(card.t, card.l))); return; }
-  if (G.useCard(S, idx)) commit();
+  doAction({ kind: "card", idx });
 }
 function onBuy(i) {
   if (!myTurn() || rolling) return;
   if (!G.canBuy(S)) { flashMsg(tx("msgNoBuyNow"), true); return; }
   if (S.points[S.turn] < G.SHOP[i][2]) { flashMsg(tx("msgPoor"), true); return; }
-  if (G.buy(S, i)) commit();
+  doAction({ kind: "buy", i });
 }
-function onDiscard(idx) { if (myTurn() && G.discard(S, S.turn, idx)) commit(); }
-function onEndPost() { if (myTurn() && G.endPostCard(S)) commit(); }
-function onPromotion(type) { if (myTurn() && G.choosePromotion(S, type)) commit(); }
+function onDiscard(idx) { if (myTurn()) doAction({ kind: "discard", idx }); }
+function onEndPost() { if (myTurn()) doAction({ kind: "endPost" }); }
+function onPromotion(type) { if (myTurn()) doAction({ kind: "promo", type }); }
+function onResign() {
+  if (!resignArmed) { resignArmed = setTimeout(() => { resignArmed = null; render(); }, 3000); return render(); }
+  clearTimeout(resignArmed); resignArmed = null;
+  doAction({ kind: "resign" });
+}
 
-function animateRoll(final, done) {
+// Called after every change of S. `quiet`: a fresh or loaded game, so nothing is animated.
+function onNewState(quiet) {
+  selCard = null;
+  if (!S.over) shareLink = "";
+  flash = null;
+  if (targeting && !(myTurn() && G.canUseCard(S))) targeting = null;
+  const newRoll = !quiet && S.rollN > lastRollN && !!S.lastRoll;
+  lastRollN = S.rollN || 0;
+  if ((mode === "local" || mode === "bot") && localRecord && !quiet) G.recordStep(localRecord, S);
+  if (newRoll) startRollAnim();
+  render();
+  runFx(quiet);
+  scheduleBot();
+}
+
+// the roll panel spins through move types before showing the result
+function startRollAnim() {
   rolling = true;
   const el = document.getElementById("roll");
   el.classList.add("rolling");
   let i = 0;
   const timer = setInterval(() => {
     el.textContent = typName(rand(TYPES));
+    Sound.play("rollTick");
     if (++i >= 8) {
       clearInterval(timer);
       el.classList.remove("rolling");
       rolling = false;
-      done();
+      const dead = S.lastRoll && S.deadRolls[S.lastRoll.piece];
+      Sound.play(dead ? "rollDead" : "rollDone");
+      render();
     }
   }, 45);
 }
 
-function restart() {
-  S = G.freshState((S ? S.seq : 0) + 1);
-  overDismissed = false; flash = null; targeting = null;
-  publish(true);
-  render();
-  runFx(true);
+// ---------- games in this browser (two players, or against the computer) ----------
+function startLocal(kind, cfg) {
+  if (mode === "online") send({ type: "leave" });
+  leaveReplay(true);
+  mode = kind;
+  gameCode = null; myRole = null; replayId = null;
+  localCfg = G.normCfg(cfg || localCfg);
+  store.set("rc-cfg", JSON.stringify(localCfg));
+  botColor = localCfg.randomSides ? (Math.random() < .5 ? "w" : "b") : "b";
+  S = G.freshState(0, localCfg);
+  localRecord = G.newRecord(S, { w: kind === "bot" ? sideName("w") : "", b: kind === "bot" ? sideName("b") : "" });
+  overDismissed = false; targeting = null; flash = null; lastRollN = 0;
+  clearHash();
+  onNewState(true);
+}
+function scheduleBot() {
+  if (mode !== "bot" || S.over || S.turn !== botColor || botTimer) return;
+  botTimer = setTimeout(() => {
+    botTimer = null;
+    if (mode !== "bot" || S.over || S.turn !== botColor) return;
+    if (rolling) return scheduleBot();
+    const act = G.botStep(S);
+    if (act) { S.seq++; onNewState(); }
+    else setTimeout(scheduleBot, 1000);
+  }, S.locked ? 700 : 850);
+}
+// timers for games in this browser; online the server keeps time
+setInterval(() => {
+  if (!S) return;
+  if ((mode === "local" || mode === "bot") && G.tick(S, Date.now())) { S.seq++; onNewState(); return; }
+  renderTimers();
+}, 250);
+
+function playAgain() {
+  if (mode === "online") send({ type: "restart" });
+  else if (mode === "replay") leaveReplay();
+  else startLocal(mode, S.cfg);
 }
 
-// ---------- syncing (WebSocket to your server) ----------
-function commit() {
-  S.seq++;
-  selCard = null;
-  flash = null;
-  if (targeting && !G.canUseCard(S)) targeting = null;
-  publish(false);
-  render();
-  runFx();
-}
-function publish(isRestart) {
-  if (mode === "online" && myRole !== "spectator") send({ type: "state", state: S, restart: !!isRestart });
-}
-
-let ws = null;
+// ---------- the server connection ----------
 function randomId(n) {
   return Array.from(crypto.getRandomValues(new Uint8Array(n)), b => "abcdefghjkmnpqrstuvwxyz23456789"[b % 31]).join("");
 }
-function playerId() {
-  try {
-    let id = localStorage.getItem("rc-player");
-    if (!id) { id = randomId(20); localStorage.setItem("rc-player", id); }
-    return id;
-  } catch (e) {
-    return window._rcPlayer || (window._rcPlayer = randomId(20));
-  }
+function secret() {
+  let id = store.get("rc-player", "");
+  if (!/^[a-z0-9]{16,40}$/.test(id)) { id = randomId(20); store.set("rc-player", id); }
+  return id;
 }
 function send(msg) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); }
-
-function openSocket(firstMessage) {
-  if (ws) { ws.onclose = null; ws.close(); }
-  const url = (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
-  const sock = new WebSocket(url);
+function connect() {
+  if (!serverOk) return;
+  const sock = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
   ws = sock;
-  sock.onopen = () => { connected = true; onlineError = ""; send(firstMessage()); render(); };
+  sock.onopen = () => { connected = true; send({ type: "hello", secret: secret(), name: store.get("rc-name", "") }); render(); };
   sock.onmessage = e => { try { handleServer(JSON.parse(e.data)); } catch (err) { console.error(err); } };
   sock.onclose = () => {
     if (ws !== sock) return;
-    connected = false; opponentHere = false;
+    connected = false; me = null;
     render();
-    setTimeout(() => {
-      if (ws === sock && mode === "online" && gameCode) {
-        openSocket(() => ({ type: "join", code: gameCode, playerId: playerId() }));
-      }
-    }, 2000);
+    setTimeout(connect, 2000);
   };
 }
 
 function handleServer(m) {
-  if (m.type === "joined") {
-    if (!G.valid(m.state)) return;
-    gameCode = m.code;
-    myRole = m.role;
-    S = m.state;
-    overDismissed = false; targeting = null;
-    if (location.hash !== "#play-" + m.code) location.hash = "play-" + m.code;
-    render(); runFx(true); return;
-  } else if (m.type === "state") {
-    if (!G.valid(m.state) || rolling) return;
-    if (m.state.seq <= S.seq && !m.force) return;
-    const wasOver = !!S.over;
-    S = m.state;
-    if (!S.over || !wasOver) overDismissed = false;
-    flash = null;
-    if (targeting && !(myTurn() && G.canUseCard(S))) targeting = null;
-    render(); runFx(); return;
-  } else if (m.type === "peers") {
-    opponentHere = myRole === "w" ? !!m.b : myRole === "b" ? !!m.w : !!(m.w && m.b);
-  } else if (m.type === "error") {
-    onlineError = String(m.message || "Something went wrong.");
-    if (m.fatal) { mode = "online"; gameCode = null; }
+  switch (m.type) {
+    case "needName":
+      needName = true;
+      // only interrupt when the player came to play online (an invite link); otherwise the online panel asks
+      if (pendingJoin || m.taken) openNameModal(m.taken ? tx("nameTaken") : "");
+      break;
+    case "nameError": openNameModal(tx(m.key)); break;
+    case "me":
+      me = m.me; needName = false;
+      store.set("rc-name", me.name);
+      closeModal("nameModal");
+      // rejoin the online game we were in, or the one in the address bar
+      if (pendingJoin) { send({ type: "join", code: pendingJoin }); pendingJoin = null; }
+      else if (mode === "online" && gameCode) send({ type: "join", code: gameCode });
+      break;
+    case "lobby": lobby = m; break;
+    case "leaderboard": leaderRows = m.rows; renderLeaderboard(); break;
+    case "state": {
+      const first = mode !== "online" || gameCode !== m.code;
+      if (first) { leaveReplay(true); mode = "online"; overDismissed = false; localRecord = null; }
+      const wasOver = !!(S && S.over), oldSeq = S ? S.seq : -1, oldPly = S ? S.ply : -1;
+      gameCode = m.code; myRole = m.role; seatNames = m.names; gameStarted = m.started; replayId = m.replayId; invitedName = m.invited || "";
+      clockSkew = m.now - Date.now();
+      S = m.state;
+      if (location.hash !== "#play-" + m.code) location.hash = "play-" + m.code;
+      if (!S.over || !wasOver) overDismissed = false;
+      // a brand-new game (restart) or our first look at this one: don't replay its history
+      onNewState(first || S.seq < oldSeq || (S.ply === 0 && oldPly > 0));
+      return;
+    }
+    case "actError": flashMsg(tx(m.key), true); break;
+    case "invite": showInvite(m); break;
+    case "inviteDeclined": flashMsg(tx("inviteDeclined", m.name), true); break;
+    case "error":
+      if (m.fatal) { clearHash(); if (mode === "online") startLocal("local"); }
+      flashMsg(tx(m.key), true);
+      break;
   }
   render();
 }
 
-function createOnline() {
-  mode = "online";
-  myRole = null; gameCode = null; onlineError = ""; targeting = null;
-  S = G.freshState(1);
-  overDismissed = false;
-  render();
-  openSocket(() => ({ type: "create", playerId: playerId(), state: S }));
+function createOnline(cfg, pub, invitePid) {
+  localCfg = G.normCfg(cfg); store.set("rc-cfg", JSON.stringify(localCfg));
+  send({ type: "create", cfg: localCfg, public: pub, invite: invitePid || undefined });
 }
-function connectOnline(code) {
-  mode = "online";
-  gameCode = code; myRole = null; onlineError = ""; targeting = null;
-  S = G.freshState(0);
-  render();
-  openSocket(() => ({ type: "join", code, playerId: playerId() }));
+function joinOnline(code) {
+  if (!connected || !me) { pendingJoin = code; return; }
+  send({ type: "join", code });
 }
 function leaveOnline() {
-  if (ws) { const s = ws; ws = null; s.onclose = null; s.close(); }
-  gameCode = null; myRole = null; mode = "local"; targeting = null;
-  connected = false; opponentHere = false; onlineError = "";
+  send({ type: "leave" });
+  startLocal("local");
+}
+function clearHash() {
+  if (!location.hash) return;
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
-  S = G.freshState();
-  overDismissed = false;
-  render();
 }
 function readHash() {
-  const m = location.hash.match(/^#play-([a-z0-9]{6,16})$/);
-  if (m && m[1] !== gameCode) connectOnline(m[1]);
+  const p = location.hash.match(/^#play-([a-z0-9]{6,16})$/);
+  if (p && p[1] !== gameCode) joinOnline(p[1]);
+  const r = location.hash.match(/^#replay-([a-z0-9]{10})$/);
+  if (r && !(mode === "replay" && replay && replay.id === r[1])) loadReplay(r[1]);
 }
 
 // ---------- rendering ----------
@@ -712,13 +892,16 @@ function renderMsg() {
   const mover = myTurn();
   let text, warn = false;
   if (flash) { text = flash.text; warn = flash.warn; }
+  else if (mode === "replay") text = tx("replayHint");
   else if (S.over) { const [a, b] = overText(); text = `${a} ${b}`; }
+  else if (mode === "online" && !gameStarted) text = invitedName ? tx("invitedWait", invitedName) : tx("msgWaitOpp");
+  else if (rolling) text = "…";
   else if (!mover) {
     if (S.pendingPromo) text = tx("msgPromoOpp", colName(S.turn));
     else if (S.pendingCopy) text = tx("msgCopyOpp", colName(S.turn));
     else if (S.postCard) text = tx("msgPostOpp", colName(S.turn));
     else {
-      text = myRole === "spectator" ? tx("msgWatch") : tx("msgWaiting", colName(S.turn));
+      text = mode === "bot" ? tx("botThinking") : myRole === "spectator" ? tx("msgWatch") : tx("msgWaiting", colName(S.turn));
       if (S.note) { text = noteText(S.note) + " " + text; warn = true; }
     }
   }
@@ -728,6 +911,7 @@ function renderMsg() {
   else if (S.pendingPromo) text = tx("msgPromo");
   else if (S.postCard) text = tx("msgPost");
   else if (S.locked) text = tx("msgLocked", pieceName(S.locked.piece), toSquare(S.board[S.locked.piece]), typName(S.locked.roll));
+  else if (S.lastRoll && S.deadRolls[S.lastRoll.piece] && S.board[S.lastRoll.piece]) { text = tx("msgCantMove", pieceName(S.lastRoll.piece), typName(S.lastRoll.roll)); warn = true; }
   else {
     const base = G.canUseCard(S) && S.hands[S.turn].length ? tx("msgClick") : tx("msgClickNoCard");
     if (S.note) { text = noteText(S.note) + " " + base; warn = true; } else text = base;
@@ -739,12 +923,13 @@ function renderMsg() {
 function overText() {
   const o = S.over;
   if (o.k === "raw") return [o.title, o.text];
-  return L().over[o.k](colName(o.w));
+  const f = L().over[o.k];
+  return f ? f(colName(o.w)) : [tx("gameOver"), ""];
 }
 
 function logText(e) {
   const v = viewer(), a = e.a;
-  const hide = e.o && isPlayer(v) && e.o !== v;   // someone else's private card info
+  const hide = (e.o && isPlayer(v) && e.o !== v) || a[1] === undefined;   // someone else's private card info
   const lg = L().log;
   switch (e.k) {
     case "got": return hide ? lg.gotHidden(colName(a[0])) : lg.got(colName(a[0]), cardName(a[1], a[2]), L().reasons[a[3]] || "");
@@ -759,7 +944,7 @@ function logText(e) {
 }
 
 function glyphHtml(type, col, extra = "") {
-  return `<span class="piece ${col} ${extra}">${GLYPH[type]}${VS}</span>`;
+  return `<span class="piece ${col} ${extra}">${GLYPH[type] || ""}${VS}</span>`;
 }
 // how a board piece looks to the viewer (Abracadabra changes the viewer's own pieces)
 function boardGlyph(p, extra) {
@@ -780,14 +965,42 @@ function applyStatic() {
     `<button data-type="${t}"><span class="g">${GLYPH[t]}${VS}</span>${esc(typName(t))}</button>`).join("");
 }
 
+function fmtTime(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+let lastTickSec = null;
+function renderTimers() {
+  const el = document.getElementById("timers");
+  if (!el || !S || !S.cfg) return;
+  if (mode === "replay" || (mode === "online" && !gameStarted)) { el.innerHTML = ""; return; }
+  const t = G.timeLeft(S, Date.now() + (mode === "online" ? clockSkew : 0));
+  let h = "";
+  if (t.turn !== null) h += `<span class="timer ${t.turn < 10000 ? "low" : ""}">⏱ ${esc(tx("timerTurn"))} ${fmtTime(t.turn)}</span>`;
+  if (t.clock) {
+    h += `<span class="timer sd">⚡ ${esc(tx("suddenOn"))}</span>`;
+    for (const c of ["w", "b"]) h += `<span class="timer ${S.turn === c && !S.over ? "active" : ""} ${t.clock[c] < 10000 ? "low" : ""}"><span class="swatch ${c}"></span>${fmtTime(t.clock[c])}</span>`;
+  }
+  el.innerHTML = h;
+  // ticking in the last seconds of your own time
+  if (myTurn() && !S.over) {
+    const left = Math.min(t.turn === null ? Infinity : t.turn, t.clock ? t.clock[S.turn] : Infinity);
+    const sec = Math.ceil(left / 1000);
+    if (sec <= 5 && sec > 0 && sec !== lastTickSec) Sound.play("tick");
+    lastTickSec = sec;
+  }
+}
+
 function render() {
+  if (!S) return;
   const v = viewer(), mover = myTurn(), dis = disguiseOnViewer();
-  const flipped = mode === "online" ? myRole === "b" : rotateLocal && S.turn === "b";
+  const flipped = mode === "online" ? myRole === "b" : mode === "bot" ? botColor === "w" : mode === "replay" ? false : rotateLocal && S.turn === "b";
   const occ = squares(S.board);
-  const moveSet = new Set((S.locked && !targeting ? S.locked.moves : []).map(m => key(...m)));
+  const moveSet = new Set((S.locked && !targeting && !rolling ? S.locked.moves : []).map(m => key(...m)));
   const copySet = new Set((S.pendingCopy && mover ? S.pendingCopy.squares : []).map(m => key(...m)));
   const lockMap = new Map(S.locks.map(l => [key(...l.sq), l]));
-  const mineSet = new Set(S.mines.filter(m => m.by === v && m.at === S.ply && isPlayer(v)).map(m => key(...m.sq)));
+  const mineSet = new Set(S.mines.filter(m => mode === "replay" || (m.by === v && m.at === S.ply && isPlayer(v))).map(m => key(...m.sq)));
+  const zoneSet = new Set(mode === "replay" ? S.zones.map(z => key(...z.sq)) : []);
   const targetCard = targeting ? S.hands[S.turn][targeting.idx] : null;
   const kingPos = S.board[S.turn + "_king"];
   const sel = S.locked ? S.board[S.locked.piece] : null;
@@ -804,9 +1017,10 @@ function render() {
       if (lock) cls.push("locked");
       if (targetCard && G.validTarget(S, targetCard, [r, c])) cls.push("target");
       let inner = "";
-      if (p) inner += boardGlyph(p, (S.deadRolls[p] ? "dead" : "") + (lock && !isKing(p) ? " frozen" : ""));
+      if (p) inner += boardGlyph(p, (S.deadRolls && S.deadRolls[p] ? "dead" : "") + (lock && !isKing(p) ? " frozen" : ""));
       if (lock) inner += `<span class="lock-n">${turnsLeft(lock.until)}</span>`;
       if (mineSet.has(k)) inner += '<span class="mine-mark">✹</span>';
+      if (zoneSet.has(k)) inner += '<span class="zone-mark"></span>';
       if (moveSet.has(k)) inner += p ? '<span class="ring"></span>' : '<span class="dot"></span>';
       if (copySet.has(k)) inner += '<span class="dot gold"></span>';
       html += `<div class="${cls.join(" ")}" data-r="${r}" data-c="${c}">${inner}</div>`;
@@ -821,9 +1035,16 @@ function render() {
   // turn
   document.getElementById("turnSwatch").className = "swatch " + S.turn;
   let turnText = S.over ? tx("gameOver") : tx("toMove", colName(S.turn));
-  if (!S.over && mode === "online" && myRole === S.turn) turnText = tx("yourTurn", colName(S.turn));
+  if (!S.over && mover && mode !== "local") turnText = tx("yourTurn", colName(S.turn));
   document.getElementById("turnText").textContent = turnText;
+  const vs = document.getElementById("vsLine");
+  vs.textContent = mode === "local" ? "" : tx("vsLine", sideName("w"), sideName("b"));
   renderMsg();
+  renderTimers();
+  const rb = document.getElementById("resignBtn");
+  const canResign = !S.over && ((mode === "online" && isPlayer(myRole) && gameStarted) || mode === "bot");
+  rb.style.display = canResign ? "" : "none";
+  rb.textContent = resignArmed ? tx("resignConfirm") : tx("resign");
 
   // roll
   if (!rolling) {
@@ -852,16 +1073,9 @@ function render() {
   const logEl = document.getElementById("log");
   logEl.textContent = "";
   const lines = dis ? [tx("hiddenAbra")] : S.log.length ? S.log.map(logText) : [tx("noMoves")];
-  for (const line of lines) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
+  for (const line of lines.slice(-60)) { const d = document.createElement("div"); d.textContent = line; logEl.appendChild(d); }
 
-  // game over popup
-  const ov = document.getElementById("overlay");
-  if (S.over && !overDismissed) {
-    const [a, b] = overText();
-    document.getElementById("overTitle").textContent = a;
-    document.getElementById("overText").textContent = b;
-    ov.classList.add("show");
-  } else ov.classList.remove("show");
+  renderOver();
 
   // discard (more than 7 cards) comes before everything else for the mover
   const mustDiscard = mover && S.hands[S.turn].length > G.HAND_MAX;
@@ -871,19 +1085,40 @@ function render() {
   }
   document.getElementById("promo").classList.toggle("show", !!(S.pendingPromo && mover && !mustDiscard));
 
-  const ng = document.getElementById("newGame");
-  ng.textContent = restartArmed ? tx("clickAgain") : tx("newGame");
-  ng.style.display = mode === "online" && myRole === "spectator" ? "none" : "";
-
+  document.body.classList.toggle("no-cards", !S.cfg.cards);
   renderCards();
   renderHands();
   renderShop();
+  renderMenu();
   renderOnline();
+  renderReplayBar();
+}
+
+function renderOver() {
+  const ov = document.getElementById("overlay");
+  if (!(S.over && !overDismissed && mode !== "replay")) { ov.classList.remove("show"); return; }
+  const [a, b] = overText();
+  const linkBox = document.getElementById("overLink");
+  if (!shareLink) linkBox.style.display = "none";
+  document.getElementById("overTitle").textContent = a;
+  document.getElementById("overText").textContent = b;
+  const canAgain = mode !== "online" || isPlayer(myRole);
+  document.getElementById("overNew").style.display = canAgain ? "" : "none";
+  const rbtn = document.getElementById("overReplay");
+  if (mode === "online") {
+    rbtn.style.display = replayId ? "" : "none";
+    rbtn.textContent = tx("copyReplay");
+  } else {
+    rbtn.style.display = serverOk && localRecord ? "" : "none";
+    rbtn.textContent = tx("shareReplay");
+  }
+  ov.classList.add("show");
 }
 
 function renderCards() {
-  const v = viewer(), mover = myTurn();
+  const v = viewer();
   const el = document.getElementById("cardsCard");
+  if (!S.cfg.cards) { el.innerHTML = `<div class="label">${esc(tx("cardsTitle"))}</div><div class="small" style="margin:0">${esc(tx("setCards"))}: ${esc(tx("off"))}</div>`; return; }
   let h = `<div class="label">${esc(tx("cardsTitle"))}</div><div class="stats">`;
   for (const col of ["w", "b"]) {
     const won = S.nomadWon[col], d = S.dist[col];
@@ -891,7 +1126,8 @@ function renderCards() {
     h += `<span class="swatch ${col}"></span><div><b>${esc(tx("points", S.points[col]))}</b> · ${esc(tx("oppHand", colName(col), S.hands[col].length))}
       <div class="muted">${esc(dist)} · ${esc(tx("pointsCap", S.earned[col]))}</div></div>`;
   }
-  h += `</div><div class="small">${esc(tx("nextDraw", G.DRAW_EVERY - (S.ply % G.DRAW_EVERY)))}</div>`;
+  h += `</div>`;
+  if (S.cfg.drawEvery) { const every = S.cfg.drawEvery * 2; h += `<div class="small">${esc(tx("nextDraw", every - (S.ply % every)))}</div>`; }
 
   // active effects
   const fx = S.locks.map(l => tx("lockEffect", toSquare(l.sq), turnsLeft(l.until)));
@@ -901,7 +1137,6 @@ function renderCards() {
   }
   if (isPlayer(v)) for (const m of S.mines) if (m.by === v && m.at === S.ply) fx.push(tx("yourMine", toSquare(m.sq)));
   h += `<div class="label" style="margin-top:12px">${esc(tx("effects"))}</div><div class="effects">${fx.length ? fx.map(x => `<div>${esc(x)}</div>`).join("") : `<div class="small" style="margin:0">${esc(tx("noEffects"))}</div>`}</div>`;
-
   el.innerHTML = h;
 }
 
@@ -928,18 +1163,20 @@ let selCard = null;   // index of the card picked in the viewer's hand
 // your cards under the board, the other side's cards (face down) above it
 function renderHands() {
   const v = viewer(), mover = myTurn();
-  const bottom = isPlayer(v) ? v : (mode === "online" ? "w" : S.turn);
+  const bottom = isPlayer(v) ? v : (mode === "local" ? S.turn : "w");
   const top = other(bottom);
-  const showFaces = isPlayer(v);
+  const showFaces = isPlayer(v) || mode === "replay";
   const topHand = S.hands[top], botHand = S.hands[bottom];
-  document.getElementById("oppLabel").innerHTML = `<span class="swatch ${top}"></span>${esc(tx("handLabel", colName(top), topHand.length))}`;
-  document.getElementById("myLabel").innerHTML = `<span class="swatch ${bottom}"></span>${esc(tx("handLabel", colName(bottom), botHand.length))}`;
-  document.getElementById("oppHand").innerHTML = topHand.length ? topHand.map(cardBack).join("") : `<span class="hand-empty">${esc(tx("noCards"))}</span>`;
+  const who = c => sideName(c) ? `${colName(c)} (${sideName(c)})` : colName(c);
+  document.getElementById("oppLabel").innerHTML = `<span class="swatch ${top}"></span>${esc(tx("handLabel", who(top), topHand.length))}`;
+  document.getElementById("myLabel").innerHTML = `<span class="swatch ${bottom}"></span>${esc(tx("handLabel", who(bottom), botHand.length))}`;
+  document.getElementById("oppHand").innerHTML = !topHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
+    : topHand.map(c => mode === "replay" && c ? cardFace(c, "off") : cardBack()).join("");
   if (selCard !== null && !botHand[selCard]) selCard = null;
   const usable = mover && G.canUseCard(S) && !rolling;
   document.getElementById("myHand").innerHTML = !botHand.length ? `<span class="hand-empty">${esc(tx("noCards"))}</span>`
     : showFaces ? botHand.map((c, i) => cardFace(c, (selCard === i || (targeting && targeting.idx === i) ? "sel" : "") + (usable ? "" : " off"), `data-card="${i}"`)).join("")
-    : botHand.map(cardBack).join("");
+    : botHand.map(() => cardBack()).join("");
 
   // info strip: what the picked card does, Use / Cancel, End turn after a capture
   const info = document.getElementById("cardInfo");
@@ -975,60 +1212,297 @@ function renderShop() {
   el.innerHTML = h;
 }
 
+
+// ---------- top bar: language, sound, rule book, tutorial ----------
+function renderToolbar() {
+  document.getElementById("toolbar").innerHTML = `
+    <button id="langBtn" class="tool">${esc(tx("lang"))}</button>
+    <button id="soundBtn" class="tool" title="${esc(Sound.muted ? tx("soundOff") : tx("soundOn"))}">${Sound.muted ? "🔇" : "🔊"}</button>
+    <button id="rulebookBtn" class="tool">📖 ${esc(tx("rulebookBtn"))}</button>
+    <button id="tutorialBtn" class="tool">❓ ${esc(tx("tutorialBtn"))}</button>`;
+}
+
+// ---------- new game menu ----------
+function renderMenu() {
+  const el = document.getElementById("menuCard");
+  const onlineOk = connected && (me || needName);
+  el.innerHTML = `
+    <div class="label">${esc(tx("menuTitle"))}</div>
+    <div class="menu-btns">
+      <button data-menu="bot">🤖 ${esc(tx("vsComputer"))}</button>
+      <button data-menu="local">👥 ${esc(tx("sameDevice"))}</button>
+      <button data-menu="online" class="primary" ${onlineOk ? "" : "disabled"}>🌐 ${esc(tx("onlineNew"))}</button>
+    </div>
+    ${mode === "local" ? `<label class="small" style="display:flex;gap:8px;align-items:center;cursor:pointer">
+      <input type="checkbox" id="rotateBox" ${rotateLocal ? "checked" : ""}> ${esc(tx("rotate"))}</label>` : ""}
+    ${serverOk && !connected ? `<div class="small">${esc(tx("offline"))}</div>` : ""}`;
+}
+
+// ---------- online: you, the game you're in, players, open games ----------
 function renderOnline() {
-  const card = document.getElementById("onlineCard");
-  const langBtn = `<button class="lang-btn" id="langBtn">${esc(tx("lang"))}</button>`;
-  if (mode === "local") {
-    card.innerHTML = `
-      <div class="top-row"><div class="label" style="margin:0">${esc(tx("play"))}</div>${langBtn}</div>
-      <div class="who">${esc(tx("onDevice"))}</div>
-      <div class="small">${esc(tx("onDeviceHint"))}</div>
-      <label class="small" style="display:flex;gap:8px;align-items:center;cursor:pointer">
-        <input type="checkbox" id="rotateBox" ${rotateLocal ? "checked" : ""}> ${esc(tx("rotate"))}
-      </label>
-      <div class="row-btns"><button class="primary" id="createBtn">${esc(tx("createOnline"))}</button></div>`;
-    document.getElementById("createBtn").onclick = createOnline;
-    document.getElementById("rotateBox").onchange = e => {
-      rotateLocal = e.target.checked;
-      try { localStorage.setItem("rc-rotate", rotateLocal ? "1" : "0"); } catch (err) {}
-      render();
-    };
-  } else {
-    const link = gameCode ? `${location.origin}${location.pathname}#play-${gameCode}` : "";
-    let led = "", status;
-    if (onlineError) status = onlineError;
-    else if (!connected) { led = "wait"; status = tx("connecting"); }
-    else if (!myRole) { led = "wait"; status = tx("joining"); }
-    else if (opponentHere) { led = "on"; status = tx("oppConnected"); }
-    else { led = "wait"; status = tx("waitingOpp"); }
-    const you = isPlayer(myRole) ? tx("youPlay", colName(myRole)) : myRole === "spectator" ? tx("youWatch") : tx("onlineGame");
-    card.innerHTML = `
-      <div class="top-row"><div class="label" style="margin:0">${esc(tx("onlineGame"))}</div>${langBtn}</div>
-      <div class="who">${esc(you)}</div>
-      <div class="status"><span class="led ${led}"></span><span>${esc(status)}</span></div>
-      <div class="online-row">
-        <input id="linkBox" readonly>
-        <button id="copyBtn">${esc(tx("copyLink"))}</button>
-      </div>
-      <div class="small">${esc(myRole === "w" ? tx("sendLink") : tx("watchLink"))}</div>
-      <div class="row-btns"><button id="leaveBtn">${esc(tx("leave"))}</button></div>`;
-    const box = document.getElementById("linkBox");
-    box.value = link;
-    box.onclick = () => box.select();
-    document.getElementById("copyBtn").onclick = e => {
-      const btn = e.currentTarget;
-      navigator.clipboard.writeText(link)
-        .then(() => { btn.textContent = tx("copied"); setTimeout(() => btn.textContent = tx("copyLink"), 1500); })
-        .catch(() => { box.select(); btn.textContent = tx("pressCtrlC"); });
-    };
-    document.getElementById("leaveBtn").onclick = leaveOnline;
+  const el = document.getElementById("onlineCard");
+  if (!serverOk) { el.style.display = "none"; return; }
+  el.style.display = "";
+  if (connected && !me && needName) {
+    el.innerHTML = `<div class="label">${esc(tx("onlineGame"))}</div><div class="small" style="margin:0 0 10px">${esc(tx("nameText"))}</div>
+      <div class="row-btns" style="margin:0"><button id="nameBtn" class="primary">${esc(tx("nameTitle"))}</button></div>`;
+    return;
   }
-  document.getElementById("langBtn").onclick = () => {
-    lang = lang === "tr" ? "en" : "tr";
-    try { localStorage.setItem("rc-lang", lang); } catch (e) {}
-    applyStatic();
-    render();
-  };
+  if (!connected || !me) {
+    el.innerHTML = `<div class="label">${esc(tx("onlineGame"))}</div><div class="status"><span class="led wait"></span><span>${esc(connected ? tx("joining") : tx("connecting"))}</span></div>`;
+    return;
+  }
+  let h = `<div class="label">${esc(tx("yourName"))}</div>
+    <div class="me-row"><div><div class="who">${esc(me.name)}</div><div class="small" style="margin:0">${esc(tx("record", me.points, me.w, me.d, me.l))}</div></div>
+    <button id="nameBtn" class="small-btn">${esc(tx("change"))}</button></div>`;
+
+  if (mode === "online" && gameCode) {
+    const link = `${location.origin}${location.pathname}#play-${gameCode}`;
+    const you = isPlayer(myRole) ? tx("youPlay", colName(myRole)) : tx("youWatch");
+    h += `<div class="label" style="margin-top:14px">${esc(tx("onlineGame"))}</div>
+      <div class="who">${esc(you)}</div>
+      <div class="online-row"><input id="linkBox" readonly value="${esc(link)}"><button id="copyBtn">${esc(tx("copyLink"))}</button></div>
+      <div class="small">${esc(isPlayer(myRole) && !gameStarted ? tx("sendLink") : tx("watchLink"))}</div>
+      <div class="row-btns"><button id="leaveBtn">${esc(tx("leave"))}</button></div>`;
+  }
+
+  // other players online, with an invite button
+  const others = lobby.players.filter(p => p.pid !== me.pid);
+  const waitingHere = mode === "online" && isPlayer(myRole) && !gameStarted;
+  h += `<div class="label" style="margin-top:14px">${esc(tx("playersOnline"))}</div><div class="plist">`;
+  if (!others.length) h += `<div class="small" style="margin:0">${esc(tx("nobodyOnline"))}</div>`;
+  for (const p of others.slice(0, 30)) {
+    h += `<div class="prow"><span class="led ${p.playing ? "wait" : "on"}"></span><span class="pn">${esc(p.name)}</span>
+      <span class="pp">${esc(p.points)}</span>
+      ${p.playing ? `<span class="small" style="margin:0">${esc(tx("playing"))}</span>` : `<button class="small-btn" data-invite="${esc(p.pid)}" data-name="${esc(p.name)}" data-here="${waitingHere ? 1 : 0}">${esc(tx("invite"))}</button>`}</div>`;
+  }
+  h += `</div>`;
+
+  // open games in the lobby
+  h += `<div class="label" style="margin-top:14px">${esc(tx("openGames"))}</div><div class="plist">`;
+  const open = lobby.games.filter(g => g.code !== gameCode);
+  if (!open.length) h += `<div class="small" style="margin:0">${esc(tx("noOpenGames"))}</div>`;
+  for (const g of open) {
+    const bits = [g.cfg.cards ? tx("setCards") : tx("setCards") + ": " + tx("off"), g.cfg.turnTime ? tx("secsOpt", g.cfg.turnTime) : ""].filter(Boolean).join(" · ");
+    h += `<div class="prow"><span class="pn">${esc(tx("hostGame", g.host))}<span class="small" style="display:block;margin:0">${esc(bits)}</span></span>
+      <button class="small-btn primary" data-join="${esc(g.code)}">${esc(tx("join"))}</button></div>`;
+  }
+  h += `</div><div class="row-btns"><button id="lbBtn">🏆 ${esc(tx("leaderboard"))}</button></div>`;
+  el.innerHTML = h;
+}
+
+// ---------- modals ----------
+function openModal(id) { document.getElementById(id).classList.add("show"); }
+function closeModal(id) { document.getElementById(id).classList.remove("show"); }
+
+// game settings, shown before every new game
+let settingsFor = null;   // { kind: "bot"|"local"|"online"|"invite", pid?, name?, here? }
+function openSettings(target) {
+  settingsFor = target;
+  const c = localCfg;
+  const sel = (k, opts, fmt) => `<select data-cfg="${k}">${opts.map(o => `<option value="${o}" ${c[k] === o ? "selected" : ""}>${esc(fmt(o))}</option>`).join("")}</select>`;
+  const chk = (k, on) => `<label class="switch"><input type="checkbox" data-cfg="${k}" ${on ? "checked" : ""}><span></span></label>`;
+  const online = target.kind === "online" || target.kind === "invite";
+  document.getElementById("settingsBody").innerHTML = `
+    <div class="set-row"><span>${esc(tx("setCards"))}</span>${chk("cards", c.cards)}</div>
+    <div class="set-row"><span>${esc(tx("setDraw"))}</span>${sel("drawEvery", G.CFG_CHOICES.drawEvery, n => tx("drawOpt", n))}</div>
+    <div class="set-row"><span>${esc(tx("setStartPoints"))}</span>${sel("startPoints", G.CFG_CHOICES.startPoints, String)}</div>
+    <div class="set-row"><span>${esc(tx("setPointCap"))}</span>${sel("pointCap", G.CFG_CHOICES.pointCap, String)}</div>
+    <div class="set-row"><span>${esc(tx("setTurnTime"))}</span>${sel("turnTime", G.CFG_CHOICES.turnTime, n => tx("secsOpt", n))}</div>
+    <div class="set-row"><span>${esc(tx("setSudden"))}</span>${sel("suddenDeath", G.CFG_CHOICES.suddenDeath, n => tx("turnsOpt", n))}</div>
+    <div class="set-row"><span>${esc(tx("setClock"))}</span>${sel("clockSec", G.CFG_CHOICES.clockSec, s => tx("minsOpt", s))}</div>
+    <div class="small" style="margin:2px 0 8px">${esc(tx("suddenHint"))}</div>
+    ${target.kind !== "local" ? `<div class="set-row"><span>${esc(tx("setRandomSides"))}</span>${chk("randomSides", c.randomSides)}</div>
+    <div class="small" style="margin:2px 0 8px">${esc(tx("randomHint"))}</div>` : ""}
+    ${target.kind === "online" ? `<div class="set-row"><span>${esc(tx("setPublic"))}</span><label class="switch"><input type="checkbox" id="setPublic" ${store.get("rc-public", "1") === "1" ? "checked" : ""}><span></span></label></div>` : ""}`;
+  document.getElementById("settingsTitle").textContent = target.kind === "invite" ? tx("inviteTo", target.name) : tx("settingsTitle");
+  document.getElementById("settingsGo").textContent = online ? (target.kind === "invite" ? tx("inviteTo", target.name) : tx("createGame")) : tx("start");
+  openModal("settingsModal");
+}
+function readSettings() {
+  const out = {};
+  document.querySelectorAll("#settingsBody [data-cfg]").forEach(el => {
+    out[el.dataset.cfg] = el.type === "checkbox" ? el.checked : Number(el.value);
+  });
+  return G.normCfg({ ...localCfg, ...out });
+}
+function startFromSettings() {
+  const cfg = readSettings(), t = settingsFor;
+  closeModal("settingsModal");
+  if (t.kind === "bot" || t.kind === "local") return startLocal(t.kind, cfg);
+  if (t.kind === "online") {
+    const pub = document.getElementById("setPublic").checked;
+    store.set("rc-public", pub ? "1" : "0");
+    return createOnline(cfg, pub);
+  }
+  if (t.kind === "invite") { createOnline(cfg, false, t.pid); flashMsg(tx("inviteSent", t.name)); }
+}
+
+function openNameModal(error) {
+  document.getElementById("nameError").textContent = error || "";
+  const inp = document.getElementById("nameInput");
+  if (!inp.value) inp.value = (me && me.name) || store.get("rc-name", "");
+  openModal("nameModal");
+  setTimeout(() => inp.focus(), 50);
+}
+function saveName() {
+  const name = document.getElementById("nameInput").value.trim();
+  if (!/^[\p{L}\p{N} _.\-]{2,20}$/u.test(name)) { document.getElementById("nameError").textContent = tx("nameBad"); return; }
+  send({ type: "setName", name });
+}
+
+let inviteMsg = null;
+function showInvite(m) {
+  inviteMsg = m;
+  document.getElementById("inviteText").textContent = tx("inviteText", m.from);
+  const c = G.normCfg(m.cfg);
+  document.getElementById("inviteCfg").textContent = [c.cards ? tx("setCards") + ": " + tx("on") : tx("setCards") + ": " + tx("off"),
+    tx("setTurnTime") + ": " + tx("secsOpt", c.turnTime), tx("setSudden") + ": " + tx("turnsOpt", c.suddenDeath)].join(" · ");
+  openModal("inviteModal");
+  Sound.play("invite");
+}
+function answerInvite(accept) {
+  if (!inviteMsg) return;
+  send({ type: "inviteReply", code: inviteMsg.code, accept });
+  closeModal("inviteModal");
+  inviteMsg = null;
+}
+
+function renderLeaderboard() {
+  const el = document.getElementById("lbBody");
+  if (!el) return;
+  if (!leaderRows.length) { el.innerHTML = `<p class="small">${esc(tx("lbEmpty"))}</p>`; return; }
+  el.innerHTML = `<table class="lb"><tr><th>#</th><th>${esc(tx("lbName"))}</th><th>${esc(tx("lbPts"))}</th><th>${esc(tx("lbWDL"))}</th></tr>
+    ${leaderRows.map((r, i) => `<tr class="${me && r.pid === me.pid ? "me" : ""}"><td>${i + 1}</td><td>${esc(r.name)}</td><td><b>${r.points}</b></td><td>${r.w} / ${r.d} / ${r.l}</td></tr>`).join("")}</table>
+    <p class="small">${esc(tx("pointsHint"))}</p>`;
+}
+function openLeaderboard() { send({ type: "leaderboard" }); renderLeaderboard(); openModal("lbModal"); }
+function openRulebook() { document.getElementById("rulebookBody").innerHTML = RULEBOOK[lang]; openModal("rulebookModal"); }
+
+// ---------- replays ----------
+let shareLink = "";
+function showLink(link) {
+  shareLink = link;
+  const box = document.getElementById("overLink");
+  box.value = link; box.style.display = "";
+  box.onclick = () => box.select();
+}
+async function shareReplay(btn) {
+  if (mode === "online") { const link = `${location.origin}${location.pathname}#replay-${replayId}`; showLink(link); return copyText(link, btn, tx("replayCopied")); }
+  if (!localRecord) return;
+  btn.disabled = true; btn.textContent = tx("replaySaving");
+  try {
+    G.recordStep(localRecord, S);
+    const res = await fetch("api/replays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(localRecord) });
+    const { id } = await res.json();
+    if (!id) throw new Error("no id");
+    btn.disabled = false;
+    const link = `${location.origin}${location.pathname}#replay-${id}`;
+    showLink(link);
+    btn.textContent = tx("replayTitle");
+    copyText(link, btn, tx("replayCopied"));
+  } catch (e) { btn.disabled = false; btn.textContent = tx("replayFailed"); }
+}
+function copyText(text, btn, done) {
+  const ok = () => { btn.textContent = done; setTimeout(() => render(), 1800); };
+  // if the browser blocks the clipboard, the link stays visible in its text box to copy by hand
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(ok, () => {});
+}
+async function loadReplay(id) {
+  flashMsg(tx("replayLoading"));
+  try {
+    const res = await fetch("api/replay/" + id);
+    if (!res.ok) throw new Error("missing");
+    const rec = await res.json();
+    if (mode === "online") send({ type: "leave" });
+    mode = "replay"; gameCode = null; myRole = null; localRecord = null;
+    replay = { id, rec, i: 0, timer: null };
+    showFrame(0, true);
+  } catch (e) { flashMsg(tx("replayNotFound"), true); }
+}
+function frameState(rec, i) {
+  const f = rec.frames[i];
+  return { ...G.freshState(0, rec.cfg), ...f, log: rec.log.slice(0, f.L), deadRolls: {}, locked: null, lastRoll: null, note: null,
+    pendingPromo: null, postCard: false, moved: false, cfg: G.normCfg(rec.cfg) };
+}
+function showFrame(i, quiet) {
+  const n = replay.rec.frames.length;
+  replay.i = Math.max(0, Math.min(n - 1, i));
+  const before = replay.i;
+  S = frameState(replay.rec, replay.i);
+  onNewState(quiet);
+  return before;
+}
+function stepReplay(d) {
+  if (!replay) return;
+  const next = replay.i + d;
+  showFrame(next, d !== 1);
+}
+function toggleReplayPlay() {
+  if (!replay) return;
+  if (replay.timer) { clearInterval(replay.timer); replay.timer = null; }
+  else {
+    if (replay.i >= replay.rec.frames.length - 1) showFrame(0, true);
+    replay.timer = setInterval(() => {
+      if (!replay || replay.i >= replay.rec.frames.length - 1) { if (replay) { clearInterval(replay.timer); replay.timer = null; } render(); return; }
+      stepReplay(1);
+    }, 1300);
+  }
+  render();
+}
+function leaveReplay(silent) {
+  if (!replay) return;
+  if (replay.timer) clearInterval(replay.timer);
+  replay = null;
+  if (!silent) { clearHash(); startLocal("local"); }
+}
+function renderReplayBar() {
+  const el = document.getElementById("replayBar");
+  if (mode !== "replay" || !replay) { el.style.display = "none"; return; }
+  el.style.display = "";
+  const n = replay.rec.frames.length;
+  el.innerHTML = `<div class="label">${esc(tx("replayTitle"))} · ${esc(tx("replayStep", replay.i + 1, n))}</div>
+    <div class="replay-btns">
+      <button data-rp="first">⏮</button><button data-rp="prev">◀</button>
+      <button data-rp="play" class="primary">${replay.timer ? "⏸" : "▶"}</button>
+      <button data-rp="next">▶▶</button><button data-rp="last">⏭</button>
+    </div>
+    <input type="range" id="replaySlider" min="0" max="${n - 1}" value="${replay.i}">
+    <div class="row-btns"><button data-rp="exit">${esc(tx("replayExit"))}</button></div>`;
+}
+
+// ---------- tutorial ----------
+let tutStep = -1;
+function startTutorial() { tutStep = 0; renderTutorial(); }
+function endTutorial() { tutStep = -1; store.set("rc-tut", "1"); document.getElementById("tutorial").classList.remove("show"); }
+function renderTutorial() {
+  const steps = L().tut, box = document.getElementById("tutorial");
+  if (tutStep < 0 || tutStep >= steps.length) return endTutorial();
+  const st = steps[tutStep];
+  box.classList.add("show");
+  const ring = document.getElementById("tutRing"), card = document.getElementById("tutCard");
+  card.innerHTML = `<div class="small" style="margin:0">${esc(tx("tutStep", tutStep + 1, steps.length))}</div>
+    <h3>${esc(st.t)}</h3><p>${esc(st.x)}</p>
+    <div class="row-btns">
+      <button id="tutSkip">${esc(tx("tutSkip"))}</button>
+      ${tutStep > 0 ? `<button id="tutBack">${esc(tx("tutBack"))}</button>` : ""}
+      <button id="tutNext" class="primary">${esc(tutStep === steps.length - 1 ? tx("tutDone") : tx("tutNext"))}</button>
+    </div>`;
+  const target = st.el && document.querySelector(st.el);
+  if (target && target.offsetParent !== null) {
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+    setTimeout(() => {
+      const r = target.getBoundingClientRect();
+      Object.assign(ring.style, { display: "block", left: r.left - 6 + "px", top: r.top - 6 + "px", width: r.width + 12 + "px", height: r.height + 12 + "px" });
+      // put the text box below the target, or above it if there's no room
+      const below = r.bottom + 14, cardH = card.offsetHeight;
+      const top = below + cardH < innerHeight ? below : Math.max(10, r.top - cardH - 14);
+      Object.assign(card.style, { left: Math.max(10, Math.min(innerWidth - card.offsetWidth - 10, r.left)) + "px", top: top + "px", transform: "none" });
+    }, 350);
+  } else {
+    ring.style.display = "none";
+    Object.assign(card.style, { left: "50%", top: "50%", transform: "translate(-50%, -50%)" });
+  }
 }
 
 // ---------- animations ----------
@@ -1099,7 +1573,7 @@ function boardClass(cls, ms) {
 
 // --- getting a card: each kind arrives its own way, then flies into its owner's hand ---
 async function fxGot(col, card, why) {
-  const hidden = !canSeeCard(col);
+  const hidden = !canSeeCard(col) || !card.t;
   const from = why === "bought" ? shopPos() : boardPos(), to = handPos(col);
   const n = flyCard(card, hidden);
   const { x, y } = from;
@@ -1287,7 +1761,7 @@ async function fxBanner(text) {
 }
 
 async function fxDiscard(col, card) {
-  const hidden = !canSeeCard(col), p = handPos(col);
+  const hidden = !canSeeCard(col) || !card.t, p = handPos(col);
   const n = flyCard(card, hidden);
   // the card catches fire and crumbles away
   particles(12, p.x, p.y - 20, dot(rand(["#ff8a3d", "#ffcf5c", "#7a3b1d"])), 70, 800);
@@ -1378,6 +1852,7 @@ async function fxZone(col, type, sqName, found) {
 
 // Barricade freezing a piece: frost spreads over the square with ice crystals
 async function fxFreeze(sqName) {
+  Sound.play("freeze");
   const p = sqPos(sqName);
   const frost = fxNode("", "fx-dot", p.x, p.y, `width:${p.w}px;height:${p.h}px;border-radius:4px;background:radial-gradient(circle, rgba(220,240,255,.8), rgba(127,196,255,.35) 60%, transparent 75%)`);
   particles(12, p.x, p.y, star(["❄", "✦", "❅"], ["#dff1ff", "#7fc4ff"]), p.w * .9, 900);
@@ -1387,6 +1862,7 @@ async function fxFreeze(sqName) {
 
 // a lock runs out: the bars break apart and fall away
 async function fxUnlock(sqName) {
+  Sound.play("unlock");
   const p = sqPos(sqName);
   const bars = [-0.3, 0, 0.3].map((f, i) => {
     const b = fxNode("", "fx-bar", 0, 0, `height:${p.h * .95}px;width:${p.w * .14}px`);
@@ -1403,6 +1879,7 @@ async function fxUnlock(sqName) {
 
 // Abracadabra wears off
 async function fxSpellEnds(col) {
+  Sound.play("spellEnd");
   if (viewer() !== col) return boardFlash("rgba(176,114,242,.3)", 600);
   boardFlash("rgba(176,114,242,.5)", 900);
   boardClass("fx-magic", 900);
@@ -1476,17 +1953,45 @@ function takeSnap() {
     mines: new Map(isPlayer(v) ? S.mines.filter(m => m.by === v && m.at === S.ply).map(m => [key(...m.sq), toSquare(m.sq)]) : []),
   };
 }
-function diffFx(a, b) {
+function diffFx(a, b, fresh) {
   const out = [];
   for (const [k, sq] of a.locks) if (!b.locks.has(k)) out.push(() => fxUnlock(sq));
   for (const c of ["w", "b"]) if (a.dis[c] && !b.dis[c]) out.push(() => fxSpellEnds(c));
   if (a.v === b.v) {
-    const still = new Set(S.mines.map(m => key(...m.sq)));
-    for (const [k, sq] of a.mines) if (!b.mines.has(k) && still.has(k)) out.push(() => fxMineHide(sq));
+    // the mine left your view; unless it just exploded, it's now hidden
+    const blown = new Set(fresh.filter(e => e.k === "mineKill" || e.k === "kingMine").map(e => e.k === "mineKill" ? e.a[2] : e.a[1]));
+    for (const [k, sq] of a.mines) if (!b.mines.has(k) && !blown.has(sq)) out.push(() => fxMineHide(sq));
   }
   return out;
 }
 
+function soundFor(e) {
+  const a = e.a, v = viewer();
+  switch (e.k) {
+    case "got": return [canSeeCard(a[0]) && a[1] ? "cardGet" : "cardHidden", 250];
+    case "bought": return ["buy", 0];
+    case "discarded": return ["burn", 0];
+    case "useBarricade": return ["barricade", 500];
+    case "useAbra": return ["abra", 450];
+    case "useMine": return ["mine", 400];
+    case "useReborn": return ["reborn", 400];
+    case "useNomad": return ["nomad", 400];
+    case "mineKill": return ["boom", 620];
+    case "kingMine": return ["shield", 300];
+    case "zoneFound": case "zoneLost": case "copyPlaced": return ["portal", 0];
+    case "copyMine": return ["boom", 900];
+    case "timedDraw": return ["draw", 0];
+    case "move": return [a[5] ? "capture" : "move", 0];
+    case "checkLost": case "checkBare": return ["check", 0];
+    case "promo": return ["promo", 0];
+    case "suddenDeath": case "turnTimeout": case "timeOut": return ["alarm", 0];
+    case "over": {
+      const w = a[0] === "stale" ? null : a[1];
+      return [!w ? "drawGame" : isPlayer(v) && mode !== "local" && w !== v ? "lose" : "win", 300];
+    }
+  }
+  return null;
+}
 function fxFor(e) {
   const a = e.a;
   switch (e.k) {
@@ -1510,6 +2015,7 @@ function fxFor(e) {
     case "copyPlaced": return () => fxCopy(a[2], false);
     case "copyMine": return () => fxCopy(a[2], true);
     case "timedDraw": return () => fxBanner(tx("fxDraw"));
+    case "suddenDeath": return () => fxBanner("⚡ " + tx("suddenOn") + "!");
   }
   return null;
 }
@@ -1524,32 +2030,28 @@ function runFx(quiet) {
   const snap = takeSnap(), before = fxSnap;
   fxSnap = snap;
   if (quiet || reduceMotion) return;
-  const queue = fresh.map(fxFor).filter(Boolean);
-  if (before) queue.push(...diffFx(before, snap));
+  const queue = fresh.map(e => {
+    const f = fxFor(e), snd = soundFor(e);
+    if (!f && !snd) return null;
+    return () => { if (snd) setTimeout(() => Sound.play(snd[0]), snd[1]); return f ? f() : sleep(120); };
+  }).filter(Boolean);
+  if (before) queue.push(...diffFx(before, snap, fresh));
   for (const f of queue) fxChain = fxChain.then(f).catch(err => console.error(err));
 }
 
 // ---------- setup ----------
-document.getElementById("board").addEventListener("click", e => {
-  const sq = e.target.closest(".sq");
-  if (sq) clickSquare(+sq.dataset.r, +sq.dataset.c);
-});
-document.getElementById("cardsCard").addEventListener("click", e => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  if (b.dataset.use !== undefined) onUseCard(+b.dataset.use);
-  else if (b.dataset.buy !== undefined) onBuy(+b.dataset.buy);
-  else if (b.id === "endPostBtn") onEndPost();
-});
-document.getElementById("myHand").addEventListener("click", e => {
+const on = (id, ev, fn) => document.getElementById(id).addEventListener(ev, fn);
+on("board", "click", e => { const sq = e.target.closest(".sq"); if (sq) clickSquare(+sq.dataset.r, +sq.dataset.c); });
+on("myHand", "click", e => {
   const c = e.target.closest("[data-card]");
   if (!c) return;
   const i = +c.dataset.card;
   if (targeting) targeting = null;
   selCard = selCard === i ? null : i;
+  Sound.play("click");
   render();
 });
-document.getElementById("cardInfo").addEventListener("click", e => {
+on("cardInfo", "click", e => {
   const b = e.target.closest("button");
   if (!b) return;
   if (b.id === "useCard" && selCard !== null) { const i = selCard; selCard = null; onUseCard(i); }
@@ -1557,36 +2059,93 @@ document.getElementById("cardInfo").addEventListener("click", e => {
   else if (b.id === "cancelTarget") { targeting = null; render(); }
   else if (b.id === "endPostBtn") onEndPost();
 });
-document.getElementById("shopPanel").addEventListener("click", e => {
-  const b = e.target.closest("button[data-buy]");
-  if (b) onBuy(+b.dataset.buy);
-});
-document.getElementById("discardList").addEventListener("click", e => {
-  const b = e.target.closest("[data-discard]");
-  if (b) onDiscard(+b.dataset.discard);
-});
-document.getElementById("newGame").addEventListener("click", () => {
-  if (mode === "online" && !restartArmed) {
-    restartArmed = setTimeout(() => { restartArmed = null; render(); }, 3000);
-    return render();
-  }
-  clearTimeout(restartArmed); restartArmed = null;
-  restart();
-});
-document.getElementById("overNew").addEventListener("click", () => { if (mode === "online" && myRole === "spectator") return; restart(); });
-document.getElementById("overClose").addEventListener("click", () => { overDismissed = true; render(); });
-document.getElementById("promoGrid").addEventListener("click", e => {
+on("shopPanel", "click", e => { const b = e.target.closest("button[data-buy]"); if (b) onBuy(+b.dataset.buy); });
+on("discardList", "click", e => { const b = e.target.closest("[data-discard]"); if (b) onDiscard(+b.dataset.discard); });
+on("promoGrid", "click", e => { const b = e.target.closest("button"); if (b) onPromotion(b.dataset.type); });
+on("resignBtn", "click", onResign);
+on("overNew", "click", () => { overDismissed = true; playAgain(); });
+on("overClose", "click", () => { overDismissed = true; render(); });
+on("overReplay", "click", e => shareReplay(e.currentTarget));
+on("toolbar", "click", e => {
   const b = e.target.closest("button");
-  if (b) onPromotion(b.dataset.type);
+  if (!b) return;
+  if (b.id === "langBtn") { lang = lang === "tr" ? "en" : "tr"; store.set("rc-lang", lang); applyStatic(); renderToolbar(); render(); if (tutStep >= 0) renderTutorial(); }
+  else if (b.id === "soundBtn") { Sound.setMuted(!Sound.muted); renderToolbar(); Sound.play("click"); }
+  else if (b.id === "rulebookBtn") openRulebook();
+  else if (b.id === "tutorialBtn") startTutorial();
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && targeting) { targeting = null; render(); } });
+on("menuCard", "click", e => {
+  const b = e.target.closest("button[data-menu]");
+  if (!b) return;
+  if (b.dataset.menu === "online" && !me) return openNameModal("");
+  openSettings({ kind: b.dataset.menu });
+});
+on("menuCard", "change", e => {
+  if (e.target.id === "rotateBox") { rotateLocal = e.target.checked; store.set("rc-rotate", rotateLocal ? "1" : "0"); render(); }
+});
+on("onlineCard", "click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.id === "nameBtn") openNameModal("");
+  else if (b.id === "copyBtn") copyText(document.getElementById("linkBox").value, b, tx("copied"));
+  else if (b.id === "leaveBtn") leaveOnline();
+  else if (b.id === "lbBtn") openLeaderboard();
+  else if (b.dataset.join) joinOnline(b.dataset.join);
+  else if (b.dataset.invite) {
+    // waiting in an online game: invite into it; otherwise set up a new game for them
+    if (b.dataset.here === "1") { send({ type: "invite", pid: b.dataset.invite }); flashMsg(tx("inviteSent", b.dataset.name)); }
+    else openSettings({ kind: "invite", pid: b.dataset.invite, name: b.dataset.name });
+  }
+});
+on("settingsGo", "click", startFromSettings);
+on("settingsCancel", "click", () => closeModal("settingsModal"));
+on("nameSave", "click", saveName);
+on("nameInput", "keydown", e => { if (e.key === "Enter") saveName(); });
+on("nameCancel", "click", () => closeModal("nameModal"));
+on("inviteAccept", "click", () => answerInvite(true));
+on("inviteDecline", "click", () => answerInvite(false));
+on("lbClose", "click", () => closeModal("lbModal"));
+on("rulebookClose", "click", () => closeModal("rulebookModal"));
+on("replayBar", "click", e => {
+  const b = e.target.closest("button[data-rp]");
+  if (!b || !replay) return;
+  const n = replay.rec.frames.length, a = b.dataset.rp;
+  if (a === "first") showFrame(0, true);
+  else if (a === "prev") stepReplay(-1);
+  else if (a === "next") stepReplay(1);
+  else if (a === "last") showFrame(n - 1, true);
+  else if (a === "play") toggleReplayPlay();
+  else if (a === "exit") leaveReplay();
+});
+on("replayBar", "input", e => { if (e.target.id === "replaySlider" && replay) showFrame(+e.target.value, true); });
+on("tutorial", "click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.id === "tutSkip") endTutorial();
+  else if (b.id === "tutBack") { tutStep--; renderTutorial(); }
+  else if (b.id === "tutNext") { tutStep++; renderTutorial(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    if (targeting) { targeting = null; render(); }
+    for (const id of ["settingsModal", "lbModal", "rulebookModal"]) closeModal(id);
+  }
+  if (mode === "replay" && replay && !e.target.closest("input, select")) {
+    if (e.key === "ArrowRight") stepReplay(1);
+    if (e.key === "ArrowLeft") stepReplay(-1);
+  }
+});
 window.addEventListener("hashchange", readHash);
+window.addEventListener("resize", () => { if (tutStep >= 0) renderTutorial(); });
 
 applyStatic();
-S = G.freshState();
-render();
-runFx(true);
+renderToolbar();
+S = G.freshState(0, localCfg);
+localRecord = G.newRecord(S);
+onNewState(true);
+connect();
 readHash();
+if (store.get("rc-tut", "") !== "1" && !location.hash) setTimeout(startTutorial, 600);
 </script>
 </body>
 </html>

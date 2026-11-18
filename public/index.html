@@ -267,6 +267,8 @@
   .gcard.sel { box-shadow: 0 0 0 3px var(--gold), 0 10px 22px rgba(0,0,0,.55); }
   /* hands held like a fan: each card has its own tilt along an arc */
   .hand-row { align-items: flex-end; overflow: visible; padding: 30px 4px 26px; }
+  /* your cards sit right under the board; a picked or hovered card simply rises over its edge */
+  #myHand { padding-top: 0; margin-top: -8px; position: relative; z-index: 5; }
   .hand-row .gcard {
     transform-origin: 50% 115%;
     transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg));
@@ -275,8 +277,13 @@
   }
   .hand-row .gcard:first-child { margin-left: 0; }
   .hand-row .gcard:hover { transform: translateY(var(--lift, 0px)) rotate(var(--rot, 0deg)); }
-  .hand-row.opp { padding: 18px 4px 22px; align-items: flex-start; }
-  .hand-row.opp .gcard { transform-origin: 50% -15%; }
+  /* the opponent's cards: small, on one line with their label, right against the board */
+  .opp-zone { display: flex; align-items: center; gap: 10px; margin-bottom: -6px; }
+  .opp-zone .hand-label { margin: 0; flex-shrink: 0; }
+  .hand-row.opp { --cw: 34px; flex: 1; justify-content: flex-end; min-height: 0; padding: 2px 6px 0; align-items: flex-start; }
+  .hand-row.opp .gcard { transform-origin: 50% -15%; margin-left: -9px; box-shadow: 0 2px 5px rgba(0,0,0,.45), inset 0 0 0 1px rgba(242,201,76,.55); }
+  .hand-row.opp .gcard .emblem { font-size: 14px; }
+  .hand-row.opp .hand-empty { font-size: 11px; }
   /* your hand when it isn't your time to choose: smaller and muted */
   #myHand .gcard { filter: saturate(.55) brightness(.8); }
   /* your time to choose: a little bigger and vivid */
@@ -524,7 +531,7 @@
   </div>
 
   <div class="board-col">
-    <div class="hand-zone">
+    <div class="hand-zone opp-zone">
       <div class="hand-label" id="oppLabel"></div>
       <div class="hand-row opp" id="oppHand"></div>
     </div>
@@ -1317,7 +1324,7 @@ function cardBack(attrs = "") { return `<div class="gcard back" ${attrs} title="
 function fanStyle(i, n, flip) {
   const spread = Math.min(9, 44 / Math.max(1, n - 1)), off = i - (n - 1) / 2;
   const rot = off * spread, lift = off * off * spread * .32;
-  return `style="--rot:${(flip ? -rot : rot).toFixed(1)}deg;--lift:${(flip ? -lift : lift).toFixed(1)}px"`;
+  return `style="--rot:${(flip ? -rot * .6 : rot).toFixed(1)}deg;--lift:${(flip ? -lift * .25 : lift).toFixed(1)}px"`;
 }
 
 let selCard = null;   // index of the card picked in the viewer's hand
